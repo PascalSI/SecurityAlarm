@@ -14312,12 +14312,16 @@ Source: http://products.nichicon.co.jp/en/pdf/XJA043/e-ud.pdf</description>
 <sheets>
 <sheet>
 <plain>
-<text x="-34.798" y="34.798" size="1.778" layer="91">LOOK1</text>
-<text x="-34.798" y="29.972" size="1.778" layer="91">LOOK2</text>
+<text x="-34.798" y="34.798" size="1.778" layer="91">LOOCK1</text>
+<text x="-34.798" y="29.972" size="1.778" layer="91">LOOCK2</text>
 <text x="-27.178" y="19.558" size="1.778" layer="91" align="bottom-right">DOOR</text>
 <text x="-27.178" y="14.478" size="1.778" layer="91" align="bottom-right">DOOR LEDS</text>
 <text x="-27.178" y="24.892" size="1.778" layer="91" align="bottom-right">DOOR BUTTON</text>
 <text x="-27.178" y="9.652" size="1.778" layer="91" align="bottom-right">GND</text>
+<text x="99.06" y="101.6" size="1.778" layer="91">Security Alarm 
+https://github.com/lexxai/SecurityAlarm
+http://lexxai.pp.ua
+2017</text>
 </plain>
 <instances>
 <instance part="PIC16F690" gate="G$1" x="33.02" y="66.04"/>
@@ -15014,6 +15018,22 @@ Source: http://products.nichicon.co.jp/en/pdf/XJA043/e-ud.pdf</description>
 <label x="86.36" y="58.42" size="1.778" layer="95" rot="R270" xref="yes"/>
 </segment>
 </net>
+<net name="N$5" class="0">
+<segment>
+<wire x1="96.52" y1="114.3" x2="96.52" y2="99.06" width="0.1524" layer="91"/>
+<wire x1="96.52" y1="99.06" x2="144.78" y2="99.06" width="0.1524" layer="91"/>
+<wire x1="144.78" y1="99.06" x2="144.78" y2="114.3" width="0.1524" layer="91"/>
+<wire x1="144.78" y1="114.3" x2="96.52" y2="114.3" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$6" class="0">
+<segment>
+<wire x1="-45.72" y1="124.46" x2="-45.72" y2="-25.4" width="0.1524" layer="91"/>
+<wire x1="-45.72" y1="-25.4" x2="190.5" y2="-25.4" width="0.1524" layer="91"/>
+<wire x1="190.5" y1="-25.4" x2="190.5" y2="124.46" width="0.1524" layer="91"/>
+<wire x1="190.5" y1="124.46" x2="-45.72" y2="124.46" width="0.1524" layer="91"/>
+</segment>
+</net>
 </nets>
 </sheet>
 </sheets>
@@ -15029,4 +15049,10 @@ Source: http://products.nichicon.co.jp/en/pdf/XJA043/e-ud.pdf</description>
 </errors>
 </schematic>
 </drawing>
+<compatibility>
+<note version="6.3" minversion="6.2.2" severity="warning">
+Since Version 6.2.2 text objects can contain more than one line,
+which will not be processed correctly with this version.
+</note>
+</compatibility>
 </eagle>
