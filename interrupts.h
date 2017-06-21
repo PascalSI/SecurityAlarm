@@ -5,6 +5,10 @@
 #define	INTERRUPT_H
 
 #include <xc.h> // include processor files - each processor file is guarded.  
+#ifndef __stdint_are_defined
+#define __stdint_are_defined
+#include <stdint.h>        /* For uint8_t definition */
+#endif
 
 #define TMR0InitValue 6;    
 

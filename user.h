@@ -20,12 +20,17 @@
 #include <htc.h>        /* HiTech General Include File */
 #endif
 
-#include <stdint.h>        /* For uint8_t definition */
-#include <stdbool.h>       /* For true/false definition */
-
 
 #ifndef USER_H
 #define	USER_H
+#ifndef __stdint_are_defined
+#define __stdint_are_defined
+#include <stdint.h>        /* For uint8_t definition */
+#endif
+#include <stdbool.h>       /* For true/false definition */
+
+//#define useInverseInputSensors
+
 
 volatile union {
     unsigned char byte;
@@ -77,37 +82,39 @@ volatile union {
 // KEYPAD_ROWS
 //ROW1
 #define KEYPAD_ROW1 LATPORTC.bits.RC0
-#define KEYPAD_ROW1_ON 1U
+#define KEYPAD_ROW1_ON 0U
 #define KEYPAD_ROW1_OFF !KEYPAD_ROW1_ON
 #define KEYPAD_ROW1_TRIS TRISCbits.TRISC0
 //ROW2
 #define KEYPAD_ROW2 LATPORTC.bits.RC1
-#define KEYPAD_ROW2_ON 1U
+#define KEYPAD_ROW2_ON 0U
 #define KEYPAD_ROW2_OFF !KEYPAD_ROW2_ON
 #define KEYPAD_ROW2_TRIS TRISCbits.TRISC1
 //ROW3
 #define KEYPAD_ROW3 LATPORTC.bits.RC2
-#define KEYPAD_ROW3_ON 1
+#define KEYPAD_ROW3_ON 0U
 #define KEYPAD_ROW3_OFF !KEYPAD_ROW3_ON
 #define KEYPAD_ROW3_TRIS TRISCbits.TRISC2
 //KEYPAD COLS
 //COL1
 #define KEYPAD_COL1 PORTAbits.RA0
-#define KEYPAD_COL1_ON 0
+#define KEYPAD_COL1_ON 0U
 #define KEYPAD_COL1_OFF !KEYPAD_COL1_ON
 #define KEYPAD_COL1_TRIS TRISAbits.TRISA0
 //COL2
 #define KEYPAD_COL2 PORTAbits.RA1
-#define KEYPAD_COL2_ON 0
+#define KEYPAD_COL2_ON 0U
 #define KEYPAD_COL2_OFF !KEYPAD_COL2_ON
 #define KEYPAD_COL2_TRIS TRISAbits.TRISA1
 //COL3
 #define KEYPAD_COL3 PORTAbits.RA2
-#define KEYPAD_COL3_ON 0
+#define KEYPAD_COL3_ON 0U
 #define KEYPAD_COL3_OFF !KEYPAD_COL3_ON
 #define KEYPAD_COL3_TRIS TRISAbits.TRISA2
 
 #define KEYPAD_ROWS_FLUSH_PORT LATPORTC_FLUSH
+
+//DOOR SENSORS
 
 #define DOOR_BUTTON PORTCbits.RC6
 #define DOOR_BUTTON_ON 0
@@ -115,17 +122,32 @@ volatile union {
 #define DOOR_BUTTON_TRIS TRISCbits.TRISC6
 
 #define LOCK1 PORTAbits.RA4
+
+#ifdef useInverseInputSensors
+#define LOCK1_ON 1
+#else
 #define LOCK1_ON 0
+#endif
+
 #define LOCK1_OFF !LOCK1_ON
 #define LOCK1_TRIS TRISAbits.TRISA4
 
 #define LOCK2 PORTAbits.RA5
+
+#ifdef useInverseInputSensors
+#define LOCK2_ON 1
+#else
 #define LOCK2_ON 0
+#endif
 #define LOCK2_OFF !LOCK2_ON
 #define LOCK2_TRIS TRISAbits.TRISA5
 
 #define DOOR PORTCbits.RC3
+#ifdef useInverseInputSensors
+#define DOOR_ON 1
+#else
 #define DOOR_ON 0
+#endif
 #define DOOR_OFF !DOOR_ON
 #define DOOR_TRIS TRISCbits.TRISC3
 
@@ -143,7 +165,7 @@ char UART_TX_Empty();
 void UART_Write_Text(char *text);
 char UART_Data_Ready();
 char UART_Read();
-void UART_Read_Text(char *Output, unsigned int length);
+void UART_Read_Text(char *Output, uint8_t length);
 
 
 #endif

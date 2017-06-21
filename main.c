@@ -8,7 +8,10 @@
 #include <htc.h>        /* HiTech General Include File */
 #endif
 
+#ifndef __stdint_are_defined
+#define __stdint_are_defined
 #include <stdint.h>        /* For uint8_t definition */
+#endif
 #include <stdbool.h>       /* For true/false definition */
 
 #include "interrupts.h"
@@ -16,6 +19,7 @@
 #include "user.h"          /* User funct/params, such as InitApp */
 
 #include "pwm.h"
+#include "keypad.h"
 
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
@@ -24,6 +28,7 @@
 /* i.e. uint8_t <variable_name>; */
 
 #define usePWR
+#define useDebugRS232
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -35,6 +40,8 @@ void main(void) {
 
     /* Initialize I/O and Peripherals for application */
     InitApp();
+    
+    //Initialize_Keypad();
 
     //SerialWrite();
 
@@ -48,8 +55,9 @@ void main(void) {
 #define delayone_pwm2_max 100
     int delayone_pwm2 = 0;
 
-
+#ifdef useDebugRS232
     UART_Init(1200);
+#endif    
 
     const uint32_t frequency = 2000u;
     uint8_t duty_cycle = 50;
@@ -60,7 +68,9 @@ void main(void) {
     PWM1_Start();
 #endif    
 
-    UART_Write_Text("System initialized\n");
+#ifdef useDebugRS232    
+    UART_Write_Text("Init\n");
+#endif    
 
 #define pwm_duty_step 5
 #define pwm_max_duty_value 95
@@ -135,25 +145,46 @@ void main(void) {
         //        }
         if (DOOR_BUTTON == DOOR_BUTTON_ON) {
             buzzer_duration = 5;
+#ifdef useDebugRS232            
             UART_Write_Text("DOOR_BUTTON\n");
+#endif            
         } 
 
         if (LOCK1 == LOCK1_ON) {
             buzzer_duration = 10;
+#ifdef useDebugRS232            
             UART_Write_Text("LOCK1\n");
+#endif            
         } 
         if (LOCK2 == LOCK2_ON) {
             buzzer_duration = 10;
+#ifdef useDebugRS232            
             UART_Write_Text("LOCK2\n");
+#endif            
         } 
         if (DOOR == DOOR_ON) {
             buzzer_duration = 10;
+#ifdef useDebugRS232            
             UART_Write_Text("DOOR\n");
+#endif            
         } 
 
-
-        if (!UART_TX_Empty()){
-                __delay_ms(200);
+#ifdef useDebugRS232
+//        if (!UART_TX_Empty()){
+//                __delay_ms(200);
+//        }
+#endif        
+        
+        uint8_t key=getKey();
+//    ROW_1_PIN = KEYPAD_ROW1_ON;
+//    ROW_2_PIN = KEYPAD_ROW2_ON;
+//    ROW_3_PIN = KEYPAD_ROW3_ON;
+//    KEYPAD_ROWS_FLUSH_PORT;
+//    NOP();
+    //uint8_t key=PORTA;
+            
+        if (key){
+           UART_Write(key); 
         }
 
 

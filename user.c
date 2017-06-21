@@ -8,10 +8,6 @@
 #include <htc.h>        /* HiTech General Include File */
 #endif
 
-#include <stdint.h>         /* For uint8_t definition */
-#include <stdbool.h>        /* For true/false definition */
-
-
 #include "user.h"
 #include "interrupts.h"
 
@@ -165,10 +161,9 @@ char UART_Read()
   return RCREG;
 }
 
-void UART_Read_Text(char *Output, unsigned int length)
+void UART_Read_Text(char *Output, uint8_t length)
 {
-  unsigned int i;
-  for(int i=0;i<length;i++)
+  for(uint8_t i=0;i<length;i++)
   Output[i] = UART_Read();
 }
 

@@ -8,7 +8,10 @@
     #include <htc.h>        /* HiTech General Include File */
 #endif
 
+#ifndef __stdint_are_defined
+#define __stdint_are_defined
 #include <stdint.h>         /* For uint8_t definition */
+#endif
 #include <stdbool.h>        /* For true/false definition */
 
 #include "interrupts.h"
