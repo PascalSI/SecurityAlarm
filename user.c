@@ -43,7 +43,7 @@ void InitApp(void) {
     LED_DOOR = LED_DOOR_OFF;
     LEDS_FLUSH_PORT;
 
-    BUZZER_TRIS = TRIS_OUTPUT;
+    BUZZER_TRIS = TRIS_OUTPUT;//TRIS_INPUT;//
     BUZZER = BUZZER_OFF;
     BUZZER_FLUSH_PORT;
 
@@ -67,7 +67,25 @@ void InitApp(void) {
     DOOR_TRIS = TRIS_INPUT;
 
 
-
+    //WDT INIT
+    //31kHz / 512 = 16 ms
+    //31kHz / 65536 = 2.11 s
+    WDTCONbits.SWDTEN=1;
+    WDTCONbits.WDTPS=0b1011;
+    //0000 = 1:32
+    //0001 = 1:64
+    //0010 = 1:128
+    //0011 = 1:256
+    //0100 = 1:512 (Reset value)
+    //0101 = 1:1024
+    //0110 = 1:2048
+    //0111 = 1:4096
+    //1000 = 1:8192
+    //1001 = 1:16384
+    //1010 = 1:32768
+    //1011 = 1:65536
+    OPTION_REGbits.PSA=0; //Prescaler Assignment bit...0 = Prescaler is assigned to the Timer0
+    
 
 
     Timer0_Init();
@@ -132,10 +150,14 @@ void UART_Write(char data)
   while(!TRMT);
   TXREG = data;
 }
+void UART_Write_Next(char data)
+{
+  TXREG = data;
+}
 
 void UART_Write2byte(int16_t data){
   UART_Write((data)>>8);
-  UART_Write((data)); 
+  UART_Write_Next((data)); 
 }
 
 char UART_TX_Empty()
@@ -143,7 +165,7 @@ char UART_TX_Empty()
   return TRMT;
 }
 
-void UART_Write_Text(char *text)
+void UART_Write_Text(const char *text)
 {
   int i;
   for(i=0;text[i]!='\0';i++)
@@ -179,6 +201,9 @@ int16_t millis(void) {
     return t0_millis;
 }
 
+int32_t millis_32(void) {
+    return t0_millis;
+}
 
 
 

@@ -1,4 +1,4 @@
-/******************************************************************************/
+///******************************************************************************/
 /* User Level #define Macros                                                  */
 /******************************************************************************/
 
@@ -60,19 +60,19 @@ volatile union {
 
 // LEDS
 #define LED_SYS1 LATPORTC.bits.RC2
-#define LED_SYS1_ON 1
+#define LED_SYS1_ON 1U
 #define LED_SYS1_OFF !LED_SYS1_ON
 #define LED_SYS1_TRIS TRISCbits.TRISC2
 
 #define LED_DOOR LATPORTC.bits.RC5
-#define LED_DOOR_ON 0
+#define LED_DOOR_ON 0U
 #define LED_DOOR_OFF !LED_DOOR_ON
 #define LED_DOOR_TRIS TRISCbits.TRISC5
 #define LEDS_FLUSH_PORT LATPORTC_FLUSH
 
 // BUZZER
 #define BUZZER LATPORTC.bits.RC4
-#define BUZZER_ON 1
+#define BUZZER_ON 1U
 #define BUZZER_OFF !BUZZER_ON
 #define BUZZER_TRIS TRISCbits.TRISC4
 #define BUZZER_FLUSH_PORT LATPORTC_FLUSH
@@ -154,15 +154,17 @@ volatile union {
 
 void Timer0_Init(void);
 int16_t millis(void);
+int32_t millis_32(void);
 
 
 void InitApp(void);         /* I/O and Peripheral Initialization */
 
 char UART_Init(const long int baudrate);
 void UART_Write(char data);
+void UART_Write_Next(char data);
 void UART_Write2byte(int16_t data);
 char UART_TX_Empty();
-void UART_Write_Text(char *text);
+void UART_Write_Text(const char *text);
 char UART_Data_Ready();
 char UART_Read();
 void UART_Read_Text(char *Output, uint8_t length);

@@ -12,7 +12,9 @@
 
 #define TMR0InitValue 6;    
 
-volatile int16_t t0_millis = 0;     /**< Milli-Second Counter.*/
+volatile int32_t t0_millis = 0;     /**< Milli-Second Counter.*/
+void interrupt isr(void);
+
 
 #endif	/* XC_HEADER_TEMPLATE_H */
 
