@@ -21,6 +21,9 @@
 #include "pwm.h"
 #include "keypad.h"
 
+#include "1wire-config.h"
+#include "1wire.h"
+
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
@@ -29,6 +32,7 @@
 
 #define usePWM
 #define useDebugRS232
+//#define useIBUTTON
 //#define useKeyboard
 
 /******************************************************************************/
@@ -105,6 +109,10 @@ const uint8_t* currentMelody;
 uint8_t currentMelodyLength = sizeof (Melody00);
 uint8_t currentMelodyPointer = 0;
 MelodyCode_e currentMelodyID = 0;
+
+
+const unsigned char key1[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+unsigned char serial_number[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 const uint8_t static passwordCode[] = {
     20, 20, 20
@@ -280,6 +288,7 @@ void scan_sensors(void) {
 
 
     //------
+#ifndef useIBUTTON  
     if (DOOR_BUTTON != DOOR_BUTTON_Last_State) {
         DOOR_BUTTON_LastDebounceTime = millis();
     }
@@ -296,6 +305,8 @@ void scan_sensors(void) {
             DOOR_BUTTON_LastStateTime = millis();
         }
     }
+
+#endif    
 
     //------
     if (DOOR != DOOR_Last_State) {
@@ -382,6 +393,23 @@ void sysLED_process(void) {
         LED_SYS1 = ~LED_SYS1;
         LEDS_FLUSH_PORT;
     }
+}
+
+//----------------------------------------------------------------------------//
+// Function:        unsigned char Detect_Slave_Device(void)
+// PreCondition:    None
+// Input:           None
+// Output:          1 - Not Present   0 - Present
+// Overview:        To check the presence of slave device.
+//----------------------------------------------------------------------------//
+
+unsigned char Detect_Slave_Device(void) {
+    if (!OW_reset_pulse()) {
+        return OW_HIGH;
+    } else {
+        return OW_LOW;
+    }
+
 }
 
 typedef enum _Security_State_e {
@@ -682,6 +710,38 @@ void main(void) {
 #endif   
         }
 
+#ifdef useIBUTTON        
+        // Is slave present???
+//            OW_WRITE_PIN=1;
+//            OW_FLUSH_PIN;
+//            OW_PIN_DIRECTION = OW_OUTPUT;            
+//            __delay_us(100);
+        
+      
+        if (Detect_Slave_Device()!=OW_HIGH) {
+            //DOOR_BUTTON = 0;
+            //drive_OW_low();
+            //OW_WRITE_PIN=0;
+            //OW_FLUSH_PIN;
+        } else {
+#ifdef useDebugRS232            
+            UART_Write_Text("Detect_Slave\n");
+#endif 
+            //DOOR_BUTTON = 1;
+            //drive_OW_high();
+
+            OW_write_byte(0x33); // Send a command to read a serial number
+
+            for (uint8_t temp = 0; temp < 8; temp++) {
+                serial_number[temp] = OW_read_byte(); // Read 64-bit registration (48-bit serial number) number from 1-wire Slave Device
+            }
+#ifdef useDebugRS232    
+            for (uint8_t temp = 0; temp < 8; temp++) {
+                UART_Write(serial_number[temp]);
+            }
+#endif
+        }
+#endif
 
 
 

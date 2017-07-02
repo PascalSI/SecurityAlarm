@@ -9,7 +9,10 @@
 #define FCY             SYS_FREQ/4
 #define _XTAL_FREQ      SYS_FREQ
 
-
+#ifndef __stdint_are_defined
+#define __stdint_are_defined
+#include <stdint.h>        /* For uint8_t definition */
+#endif
 
 /******************************************************************************/
 /* System Function Prototypes                                                 */
