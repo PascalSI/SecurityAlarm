@@ -10,9 +10,15 @@
 #include <stdint.h>        /* For uint8_t definition */
 #endif
 
+
 #define TMR0InitValue 6;    
 
 volatile int32_t t0_millis = 0;     /**< Milli-Second Counter.*/
+//#ifdef usePC2Keyboard 
+volatile uint8_t pc2kbd_answer=0x0, pc2kbd_count=0;
+volatile uint8_t pc2kbd_ready;
+
+//#endif
 void interrupt isr(void);
 
 

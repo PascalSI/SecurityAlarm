@@ -7,6 +7,7 @@
  */
 
 #include "keypad.h"
+#include "user.h"
 
 static Keypad_s s_keypad; /**< Keypad Structure.*/
 static uint8_t KeyPressTable[MAX_ROW][MAX_COL] = {

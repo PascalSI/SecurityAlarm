@@ -29,7 +29,22 @@
 #endif
 #include <stdbool.h>       /* For true/false definition */
 
+#include "pwm.h"
+#include "keypad.h"
+
+#include "1wire-config.h"
+#include "1wire.h"
+#include "pc2keyboard.h"
+
 //#define useInverseInputSensors
+#define usePWM
+#define useDebugRS232
+//#define useVoltageDetector
+//#define useIBUTTON
+//#define useKeyboard
+//#define usePC2Keyboard
+
+
 
 
 volatile union {
@@ -153,6 +168,190 @@ volatile union {
 #define DOOR_OFF !DOOR_ON
 #define DOOR_TRIS TRISCbits.TRISC3
 
+//------------
+
+bit ToneNext = false;
+bit TonePaused = false;
+bit ToneEnabled = false;
+bit TonePlayOnce = false;
+
+//SOS melody
+const uint8_t  Melody00[] = {
+    30, 15,
+    90, 30,
+    30, 15,
+    90, 30,
+    30, 15,
+    90, 30,
+    30, 200,
+    15, 7,
+    15, 7,
+    15, 30,
+    30, 7,
+    30, 7,
+    30, 30,
+    15, 7,
+    15, 7,
+    15, 200
+};
+//Melody Siren
+const uint8_t Melody01[] = {
+    45, 15
+};
+//Melody seconds Bit
+const uint8_t Melody02[] = {
+    5, 250
+};
+//Melody ALARM OFF
+const uint8_t Melody03[] = {
+    150, 50,
+    5, 20,
+    5, 5
+};
+
+//Melody ALARM ON
+const uint8_t Melody04[] = {
+    50, 50,
+    5, 50,
+    5, 50,
+    5, 50,
+    5, 1
+};
+
+//Melody ERROR
+const uint8_t Melody05[] = {
+    1, 1,
+    1, 1,
+    1, 1,
+    1, 1,
+    1, 1
+};
+
+typedef enum _MelodyCod_e {
+    SOS_e = 0,
+    SIREN_e,
+    SECONDS_e,
+    ALARMOFF_e,
+    ALARMON_e,
+    ERROR_e
+} MelodyCode_e;
+
+const uint8_t* currentMelody;
+uint8_t currentMelodyLength = sizeof (Melody00);
+uint8_t currentMelodyPointer = 0;
+MelodyCode_e currentMelodyID = 0;
+
+
+
+const uint8_t passwordCode[] = {
+    20, 20, 20
+};
+
+uint8_t passwordCodeCurrnetPointer = 0;
+
+typedef enum _Sensors_e {
+    LOCK1_e = 0,
+    LOCK2_e,
+    DOOR_BUTTON_e,
+    DOOR_e
+} Sensors_e;
+
+typedef struct _Sensor_s {
+    //  bit Last_State;             
+    //  bit State;              
+    uint16_t LastDebounceTime;
+} Sensor_s;
+
+//Sensor_s Sensors[4];
+
+bit DOOR_Last_State;
+bit DOOR_BUTTON_Last_State;
+bit LOCK1_Last_State;
+bit LOCK2_Last_State;
+
+bit DOOR_State;
+bit DOOR_BUTTON_State;
+bit LOCK1_State;
+bit LOCK2_State;
+
+int16_t DOOR_LastDebounceTime;
+int16_t DOOR_BUTTON_LastDebounceTime;
+int16_t LOCK1_LastDebounceTime;
+int16_t LOCK2_LastDebounceTime;
+
+int16_t DOOR_BUTTON_LastStateTime;
+int16_t DOOR_BUTTON_Duration; //0.1s = 1 
+Keypad_State_e DOOR_BUTTON_FinalState = KEYPAD_UP;
+
+const uint8_t debounceDelay = 100;
+
+int16_t delaySysLEDblink = 0;
+int16_t delayone_pwm = 0;
+int16_t buzzer_delay = 0;
+uint16_t buzzer_duration = 0;
+int16_t buzzer_pause_delay = 0;
+int16_t buzzer_pause_duration = 0;
+
+//PWM
+const uint32_t PWM_frequency = 2000u;
+uint8_t PWM_duty_cycle = 50;
+
+#define pwm_FlashMode_middle 100
+#define pwm_FlashMode_long  255
+#define pwm_FlashMode_short 5
+
+
+uint8_t delayone_pwm2_max = pwm_FlashMode_long;
+uint8_t delayone_pwm2 = 0;
+#define pwm_duty_step 5
+#define pwm_max_duty_value 95
+#define pwm_min_duty_value 0
+uint8_t pwm_direction = pwm_duty_step;
+
+//LED blink
+#define sysLEDblinkDelayOff 990 //1 sec
+#define sysLEDblinkDelayOn 10 //0.1 sec
+
+//Security_State
+typedef enum _Security_State_e {
+    DELAY_PREPARE_DOOR = 0,
+    ARMED,
+    DISARMED,
+    UNLOCKED,
+    WAIT_OPENING_ALL_LOCKS,
+    DOOR_OPENED_DELAY,
+    ALARM,
+    ALARM_TIMEOUT,
+    ALARM_UNLOCKING_TIMEOUT
+} Security_State_e;
+
+
+#define Time_for_Unlocking 1l*60l*1000l
+int32_t delay_for_Unlocking;
+
+#define Time_for_CloseDoor 45l*1000l
+int32_t delay_for_CloseDoor;
+
+#define Time_for_OpenDoor 1l*60l*1000l
+int32_t delay_for_OpenDoor;
+
+#define Time_for_Alarm 5l*60l*1000l
+int32_t delay_for_Alarm;
+
+#define Time_for_DISARMED 2l*60l*1000l
+int32_t delay_for_DISARMED;
+
+Security_State_e Security_State = ARMED;
+
+
+#ifdef useIBUTTON
+const unsigned char key1[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+unsigned char serial_number[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+#endif
+
+//------------
+
+
 
 void Timer0_Init(void);
 int16_t millis(void);
@@ -161,6 +360,30 @@ int32_t millis_32(void);
 
 void InitApp(void);         /* I/O and Peripheral Initialization */
 
+//Melody 
+void buzzer_process(void);
+
+void Melody_Play();
+void Melody_Stop();
+void Melody_Select(MelodyCode_e id);
+void Melody_Processes(void);
+
+
+void scan_sensors(void);
+Keypad_State_e getDoorButtonState();
+
+//PWM
+void pwm_flash_mode(uint8_t m);
+void pwm_process(void);
+
+void sysLED_process(void);
+
+//ibutton 
+unsigned char Detect_Slave_Device(void);
+
+
+
+//UART
 char UART_Init(const long int baudrate);
 void UART_Write(char data);
 void UART_Write_Next(char data);
@@ -170,6 +393,9 @@ void UART_Write_Text(const char *text);
 char UART_Data_Ready();
 char UART_Read();
 void UART_Read_Text(char *Output, uint8_t length);
+
+void VoltageDetector_Start(void);
+void VoltageDetector_Check(void);
 
 
 #endif

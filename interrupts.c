@@ -3,9 +3,9 @@
 /******************************************************************************/
 
 #if defined(__XC)
-    #include <xc.h>         /* XC8 General Include File */
+#include <xc.h>         /* XC8 General Include File */
 #elif defined(HI_TECH_C)
-    #include <htc.h>        /* HiTech General Include File */
+#include <htc.h>        /* HiTech General Include File */
 #endif
 
 #ifndef __stdint_are_defined
@@ -15,6 +15,7 @@
 #include <stdbool.h>        /* For true/false definition */
 
 #include "interrupts.h"
+#include "pc2keyboard.h"
 
 /******************************************************************************/
 /* Interrupt Routines                                                         */
@@ -25,8 +26,6 @@
  * _PIC12 */
 #ifndef _PIC12
 
-
-
 /**
  * @brief Interrupt Service Routine (High).
  *
@@ -36,33 +35,32 @@
  * interrupt occurs and its corresponding flag gets set.
  */
 
-void interrupt isr(void)
-{
+void interrupt isr(void) {
     /* This code stub shows general interrupt handling.  Note that these
     conditional statements are not handled within 3 seperate if blocks.
     Do not use a seperate if block for each interrupt flag to avoid run
     time errors. */
 
 #if 1
-    
-    
+
+
     /* TODO Add interrupt routine code here. */
 
     /* Determine which flag generated the interrupt */
-//    if(<Interrupt Flag 1>)
-//    {
-//        <Interrupt Flag 1=0>; /* Clear Interrupt Flag 1 */
-//    }
-//    else if (<Interrupt Flag 2>)
-//    {
-//        <Interrupt Flag 2=0>; /* Clear Interrupt Flag 2 */
-//    }
-//    else
-//    {
-//        /* Unhandled interrupts */
-//    }
+    //    if(<Interrupt Flag 1>)
+    //    {
+    //        <Interrupt Flag 1=0>; /* Clear Interrupt Flag 1 */
+    //    }
+    //    else if (<Interrupt Flag 2>)
+    //    {
+    //        <Interrupt Flag 2=0>; /* Clear Interrupt Flag 2 */
+    //    }
+    //    else
+    //    {
+    //        /* Unhandled interrupts */
+    //    }
 
-  // Timer0 Interrupt - Freq = 1000.00 Hz - Period = 0.001000 seconds
+    // Timer0 Interrupt - Freq = 1000.00 Hz - Period = 0.001000 seconds
     if (INTCONbits.T0IF == 1) // timer 0 interrupt flag
     {
         INTCONbits.T0IF = 0; // clear the flag
@@ -70,6 +68,26 @@ void interrupt isr(void)
         TMR0 = TMR0InitValue; // reset the timer preset count
         t0_millis++;
     }
+#ifdef usePC2Keyboard    
+    else if (INTCONbits.INTF == 1) {
+        INTCONbits.INTF == 0; // clear the flag
+        pc2kbd_count++;
+        if (pc2kbd_count > 1 && pc2kbd_count < 10) {
+            if (PC2Keyboard_DATA == 1) {
+                pc2kbd_answer = pc2kbd_answer | 0x80; // if input bit is high   
+            }
+            if (pc2kbd_count > 1 && pc2kbd_count < 9) {
+                pc2kbd_answer = (pc2kbd_answer >> 1); // need to shift 7times,not to loose last bit
+            }
+        }
+        if (pc2kbd_count == 11) {
+            pc2kbd_ready = PC2Keyboard_DATA; //stop bit always must be 1s
+            pc2kbd_count = 0;
+        }
+//        OPTION_REGbits.INTEDG = 0; //falling egde
+//        INTCONbits.INTE == 1; // reenable the interrupt
+    }
+#endif    
 
 #endif
 

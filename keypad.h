@@ -9,7 +9,12 @@
 #ifndef KEYPAD_H_
 #define KEYPAD_H_
 
-#include "user.h"
+#ifndef __stdint_are_defined
+#define __stdint_are_defined
+#include <stdint.h>        /* For uint8_t definition */
+#endif
+
+//#include "user.h"
 //#include "config.h"
 
 #define MAX_ROW         3                 /**< Maximum Row.*/

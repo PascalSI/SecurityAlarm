@@ -35,19 +35,19 @@ uint8_t PWM1_Init(const uint32_t frequency)
   /* 1) Disable the CCPx pin output driver by setting the associated TRIS bit*/
   TRISCbits.TRISC5 = TRIS_OUTPUT;
   /* 2) Load the PR2 register for Timer2 with PWM Period Value.*/
-  pwm_freq = frequency;
+  //pwm_freq = frequency;
   temp = _XTAL_FREQ/frequency;
   temp /= 4u;
   temp /= timer_prescale;
   if ( temp < 255u )
-    PR2 = (uint8_t)temp - 1;
+    PR2 = (uint8_t)temp - 1u;
   else
   {
     timer_prescale = 4u;
     temp2 = temp/timer_prescale;
     if ( temp2 < 255u )
     {
-      PR2 = (uint8_t)temp2 - 1;
+      PR2 = (uint8_t)temp2 - 1u;
     }
     else
     {
@@ -55,7 +55,7 @@ uint8_t PWM1_Init(const uint32_t frequency)
       temp = temp/timer_prescale;
       if ( temp < 255u )
       {
-        PR2 = (uint8_t)temp - 1;
+        PR2 = (uint8_t)temp - 1u;
       }
       else
       {
