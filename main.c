@@ -70,7 +70,7 @@ void main(void) {
 
 
 #ifdef useDebugRS232
-    UART_Init(2400);
+    UART_Init(1200);
 #endif    
 
 
@@ -82,10 +82,7 @@ void main(void) {
 #endif    
 
 #ifdef useDebugRS232    
-    UART_Write(0xFF);
-    UART_Write(0x01);
-    UART_Write(0x02);
-    //UART_Write_Text("Init. ARMED\n");
+    UART_Write_Text("Init. ARMED\n");
 #endif    
 
 

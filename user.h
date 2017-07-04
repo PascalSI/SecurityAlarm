@@ -39,10 +39,10 @@
 //#define useInverseInputSensors
 #define usePWM
 #define useDebugRS232
-//#define useVoltageDetector
+#define useVoltageDetector
 //#define useIBUTTON
 //#define useKeyboard
-//#define usePC2Keyboard
+#define usePC2Keyboard
 
 
 
@@ -348,6 +348,8 @@ Security_State_e Security_State = ARMED;
 const unsigned char key1[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 unsigned char serial_number[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 #endif
+
+
 
 //------------
 

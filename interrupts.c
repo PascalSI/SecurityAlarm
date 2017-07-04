@@ -70,24 +70,49 @@ void interrupt isr(void) {
     }
 #ifdef usePC2Keyboard    
     else if (INTCONbits.INTF == 1) {
-        INTCONbits.INTF == 0; // clear the flag
+        INTCONbits.INTF = 0; // clear the flag
         pc2kbd_count++;
-        if (pc2kbd_count > 1 && pc2kbd_count < 10) {
+        if (pc2kbd_count == 0) {
+            pc2kbd_start = (PC2Keyboard_DATA == 0);
+        } else if (pc2kbd_count > 1 && pc2kbd_count < 10) {
             if (PC2Keyboard_DATA == 1) {
                 pc2kbd_answer = pc2kbd_answer | 0x80; // if input bit is high   
             }
-            if (pc2kbd_count > 1 && pc2kbd_count < 9) {
+            if (pc2kbd_count < 9) {
                 pc2kbd_answer = (pc2kbd_answer >> 1); // need to shift 7times,not to loose last bit
             }
-        }
-        if (pc2kbd_count == 11) {
-            pc2kbd_ready = PC2Keyboard_DATA; //stop bit always must be 1s
+        } else if (pc2kbd_count == 10) { // odd parity check
+            uint8_t p = pc2kbd_answer;
+            p = p ^ (p >> 4 | p << 4);
+            p = p ^ (p >> 2);
+            p = p ^ (p >> 1);
+            pc2kbd_parity = (p == PC2Keyboard_DATA);
+        } else if (pc2kbd_count == 11) {
+            if (pc2kbd_parity) {
+                pc2kbd_parity = 0;
+                pc2kbd_start = 0;
+                pc2kbd_ready = PC2Keyboard_DATA; //stop bit always must be 1s
+                pc2kbd_count = 0;
+            }
+        } else {
+            pc2kbd_ready = 0;
+            pc2kbd_parity = 0;
+            pc2kbd_start = 0;
             pc2kbd_count = 0;
         }
-//        OPTION_REGbits.INTEDG = 0; //falling egde
-//        INTCONbits.INTE == 1; // reenable the interrupt
+        //        OPTION_REGbits.INTEDG = 0; //falling egde
+        //        INTCONbits.INTE == 1; // reenable the interrupt
     }
 #endif    
+#ifdef useVoltageDetector
+    else if (PIR1bits.ADIF) { //PIR1bits.ADIF
+#define adc_val ADRESL             
+        PIR1bits.ADIF = 0;
+        ADCON0bits.ADON = 0; // Turn on/off ADC module
+        PIE1bits.ADIE = 0;
+        lowVoltageIs = (adc_val > 120u);
+    }
+#endif
 
 #endif
 

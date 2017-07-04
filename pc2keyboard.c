@@ -3,6 +3,8 @@
 void PC2Keyboard_Init(void) {
     //PC2 CLOCK - KEYPAD_COL3 (INT)RA2/INT
     //INTEDG
+    CM2CON0 = 0;
+    ANSELbits.ANS2 = 0; //0 = Digital I/O. Pin is assigned to port or special function.
     OPTION_REGbits.INTEDG = 0; //falling egde
     INTCONbits.INTE = 1; //enable inetrupt by INT 
     INTCONbits.INTF = 0;
@@ -131,15 +133,15 @@ void PC2Keboard_Process() {
                 //':'; 
                 //break;
         }
-//        if (kbd_char) {
+//       if (kbd_char) {
 //#ifdef useDebugRS232    
 //            UART_Write(kbd_char);
 //#endif
-//        } else {
+////        } else {
 #ifdef useDebugRS232    
             UART_Write(pc2kbd_answer);
 #endif 
- //       }
+//       }
         pc2kbd_answer = 0;
         pc2kbd_ready = 0;
     }

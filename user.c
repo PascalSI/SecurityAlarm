@@ -196,7 +196,6 @@ Keypad_State_e getDoorButtonState() {
     return tmp;
 }
 
-
 void pwm_flash_mode(uint8_t m) {
     delayone_pwm2_max = m;
 }
@@ -230,14 +229,12 @@ void pwm_process(void) {
 #endif
 }
 
-
-
 void sysLED_process(void) {
     if (millis() - delaySysLEDblink >= ((LED_SYS1) ? sysLEDblinkDelayOn : sysLEDblinkDelayOff)) {
         delaySysLEDblink = millis();
         LED_SYS1 = ~LED_SYS1;
         LEDS_FLUSH_PORT;
-        
+
 #ifdef useVoltageDetector
         if (LED_SYS1) VoltageDetector_Start();
 #endif
@@ -261,7 +258,6 @@ unsigned char Detect_Slave_Device(void) {
 
 }
 
-
 void InitApp(void) {
     /* TODO Initialize User Ports/Peripherals/Project here */
 
@@ -272,7 +268,7 @@ void InitApp(void) {
     /* Enable interrupts */
 
     //ANALOG PORT SET TO DIGITAL
-    ANSEL  = 0b00000000;
+    ANSEL = 0b00000000;
     ANSELH = 0b00000000;
 
 
@@ -344,14 +340,14 @@ void InitApp(void) {
     ADCON0bits.VCFG = 0; // VCFG: Voltage Reference bit = VDD
     ADCON0bits.ADON = 0; // Turn on/off ADC module
     ADCON1bits.ADCS = 0b001; // FOSC/8 (2.0 ?s, 4 Mhz)
-//ADCS<2:0>: A/D Conversion Clock Select bits
-//000 = FOSC/2
-//001 = FOSC/8
-//010 = FOSC/32
-//x11 = FRC (clock derived from a dedicated internal oscillator = 500 kHz max)
-//100 = FOSC/4
-//101 = FOSC/16
-//110 = FOSC/64
+    //ADCS<2:0>: A/D Conversion Clock Select bits
+    //000 = FOSC/2
+    //001 = FOSC/8
+    //010 = FOSC/32
+    //x11 = FRC (clock derived from a dedicated internal oscillator = 500 kHz max)
+    //100 = FOSC/4
+    //101 = FOSC/16
+    //110 = FOSC/64
 #endif
 
 
@@ -457,29 +453,16 @@ void VoltageDetector_Start(void) {
 #ifdef useVoltageDetector
     ADCON0bits.ADON = 1; // Turn on/off ADC module
     PIR1bits.ADIF = 0;
-    //PIE1bits.ADIE = 1;
-    //INTCONbits.PEIE = 1;
+    PIE1bits.ADIE = 1;
+    INTCONbits.PEIE = 1;
     ADCON0bits.GO = 1; // Start a conversion
 #endif    
 }
 
 void VoltageDetector_Check(void) {
-    if ( PIR1bits.ADIF) { //PIR1bits.ADIF
-        PIR1bits.ADIF = 0;
-        // Wait for it to be completed
-        //uint8_t adc_val = 0;
-        //adc_val = (ADRESH << 8); // Store the result in adc_val
-        //adc_val = ADRESL; //|= ADRESL;
-#define adc_val ADRESL
-        ADCON0bits.ADON = 0; // Turn on/off ADC module
-//#ifdef useDebugRS232    
-//        UART_Write2byte(adc_val);
-//#endif
-        if (adc_val>104){
-            Melody_Select(SIREN_e);
-        }else{
-            Melody_Stop();
-        }
+    if (lowVoltageIs) {
+        buzzer_duration=20;
+        lowVoltageIs=0;
     }
 }
 
