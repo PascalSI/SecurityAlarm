@@ -339,10 +339,6 @@ void main(void) {
         }
 #endif
 
-#ifdef useVoltageDetector
-        VoltageDetector_Check();
-#endif
-
 #ifdef usePC2Keyboard
         PC2Keboard_Process();
 #endif  

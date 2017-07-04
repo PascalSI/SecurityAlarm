@@ -215,7 +215,7 @@ void pwm_process(void) {
         }
 
         if (delayone_pwm2 > 0) {
-            if (delayone_pwm2 >= delayone_pwm2_max) {
+            if (delayone_pwm2 >= ((lowVoltageIs)?delayone_pwm2_max*3L:delayone_pwm2_max)) {
                 delayone_pwm2 = 0;
                 PWM_duty_cycle = PWM_duty_cycle + pwm_direction;
             }
@@ -230,7 +230,12 @@ void pwm_process(void) {
 }
 
 void sysLED_process(void) {
-    if (millis() - delaySysLEDblink >= ((LED_SYS1) ? sysLEDblinkDelayOn : sysLEDblinkDelayOff)) {
+
+    if (millis() - delaySysLEDblink >= (
+            (LED_SYS1) ? sysLEDblinkDelayOn : (
+            (lowVoltageIs) ? sysLEDblinkDelayOff_lowPower : sysLEDblinkDelayOff
+            )
+            )) {
         delaySysLEDblink = millis();
         LED_SYS1 = ~LED_SYS1;
         LEDS_FLUSH_PORT;
@@ -253,6 +258,7 @@ unsigned char Detect_Slave_Device(void) {
     if (!OW_reset_pulse()) {
         return OW_HIGH;
     } else {
+
         return OW_LOW;
     }
 
@@ -268,6 +274,7 @@ void InitApp(void) {
     /* Enable interrupts */
 
     //ANALOG PORT SET TO DIGITAL
+
     ANSEL = 0b00000000;
     ANSELH = 0b00000000;
 
@@ -355,6 +362,7 @@ void InitApp(void) {
 
 void Timer0_Init(void) {
     //Timer0 Registers Prescaler= 4 - TMR0 Preset = 6 - Freq = 1000.00 Hz - Period = 0.001000 seconds
+
     OPTION_REGbits.T0CS = 0; // bit 5  TMR0 Clock Source Select bit...0 = Internal Clock (CLKO) 1 = Transition on T0CKI pin
     OPTION_REGbits.T0SE = 0; // bit 4 TMR0 Source Edge Select bit 0 = low/high 1 = high/low
     OPTION_REGbits.PSA = 0; // bit 3   Prescaler Assignment bit...0 = Prescaler is assigned to the Timer0
@@ -388,6 +396,7 @@ char UART_Init(const long int baudrate) {
         TRISBbits.TRISB6 = 1; //As Prescribed in Datasheet
         RCSTAbits.CREN = 1; //Enables Continuous Reception
         TXSTAbits.TXEN = 1; //Enables Transmission
+
         return 1; //Returns 1 to indicate Successful Completion
     }
     return 0; //Returns 0 to indicate UART initialization failed
@@ -396,39 +405,47 @@ char UART_Init(const long int baudrate) {
 }
 
 void UART_Write(char data) {
+
     while (!TRMT);
     TXREG = data;
 }
 
 void UART_Write_Next(char data) {
+
     TXREG = data;
 }
 
 void UART_Write2byte(int16_t data) {
+
     UART_Write((data) >> 8);
     UART_Write_Next((data));
 }
 
 char UART_TX_Empty() {
+
     return TRMT;
 }
 
 void UART_Write_Text(const char *text) {
     int i;
+
     for (i = 0; text[i] != '\0'; i++)
         UART_Write(text[i]);
 }
 
 char UART_Data_Ready() {
+
     return RCIF;
 }
 
 char UART_Read() {
     while (!RCIF);
+
     return RCREG;
 }
 
 void UART_Read_Text(char *Output, uint8_t length) {
+
     for (uint8_t i = 0; i < length; i++)
         Output[i] = UART_Read();
 }
@@ -442,15 +459,18 @@ void UART_Read_Text(char *Output, uint8_t length) {
  * @return Number of milliseconds since the program started (#u32_t)
  */
 int16_t millis(void) {
+
     return t0_millis;
 }
 
 int32_t millis_32(void) {
+
     return t0_millis;
 }
 
 void VoltageDetector_Start(void) {
 #ifdef useVoltageDetector
+
     ADCON0bits.ADON = 1; // Turn on/off ADC module
     PIR1bits.ADIF = 0;
     PIE1bits.ADIE = 1;
@@ -459,11 +479,5 @@ void VoltageDetector_Start(void) {
 #endif    
 }
 
-void VoltageDetector_Check(void) {
-    if (lowVoltageIs) {
-        buzzer_duration=20;
-        lowVoltageIs=0;
-    }
-}
 
 

@@ -302,15 +302,16 @@ uint8_t PWM_duty_cycle = 50;
 
 
 uint8_t delayone_pwm2_max = pwm_FlashMode_long;
-uint8_t delayone_pwm2 = 0;
+uint16_t delayone_pwm2 = 0;
 #define pwm_duty_step 5
 #define pwm_max_duty_value 95
 #define pwm_min_duty_value 0
 uint8_t pwm_direction = pwm_duty_step;
 
 //LED blink
-#define sysLEDblinkDelayOff 990 //1 sec
 #define sysLEDblinkDelayOn 10 //0.1 sec
+#define sysLEDblinkDelayOff 1000-sysLEDblinkDelayOn //1 sec
+#define sysLEDblinkDelayOff_lowPower (1000*5)-sysLEDblinkDelayOn //5 sec
 
 //Security_State
 typedef enum _Security_State_e {
@@ -397,7 +398,7 @@ char UART_Read();
 void UART_Read_Text(char *Output, uint8_t length);
 
 void VoltageDetector_Start(void);
-void VoltageDetector_Check(void);
+
 
 
 #endif
