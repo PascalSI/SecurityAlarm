@@ -8,6 +8,9 @@ void PC2Keyboard_Init(void) {
     OPTION_REGbits.INTEDG = 0; //falling egde
     INTCONbits.INTE = 1; //enable inetrupt by INT 
     INTCONbits.INTF = 0;
+   
+    INTCONbits.RABIE = 0;
+    IOCAbits.IOCA2 = 0;
 
 }
 

@@ -16,9 +16,12 @@
 volatile int32_t t0_millis = 0;     /**< Milli-Second Counter.*/
 //#ifdef usePC2Keyboard 
 volatile uint8_t pc2kbd_answer=0x0, pc2kbd_count=0;
-volatile bit pc2kbd_ready;
-volatile bit pc2kbd_parity;
-volatile bit pc2kbd_start;
+bit pc2kbd_ready;
+bit pc2kbd_parity;
+bit pc2kbd_start;
+bit pc2kbd_data;
+int32_t pc2kbd_timer;
+
 
 //#ifdef useVoltageDetector
 volatile bit lowVoltageIs;

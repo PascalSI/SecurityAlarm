@@ -70,7 +70,7 @@ void main(void) {
 
 
 #ifdef useDebugRS232
-    UART_Init(1200);
+    UART_Init(4800);
 #endif    
 
 

@@ -304,8 +304,9 @@ uint8_t PWM_duty_cycle = 50;
 uint8_t delayone_pwm2_max = pwm_FlashMode_long;
 uint16_t delayone_pwm2 = 0;
 #define pwm_duty_step 5
-#define pwm_max_duty_value 95
-#define pwm_min_duty_value 0
+#define pwm_max_duty_value 95           //MIN brigtness 100-off, 0-on
+#define pwm_min_duty_value 0            //MAX brigtness
+#define pwm_min_duty_value_lowPower 75  //MAX brigtness in lowpower mode
 uint8_t pwm_direction = pwm_duty_step;
 
 //LED blink

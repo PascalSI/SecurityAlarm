@@ -207,15 +207,15 @@ void pwm_process(void) {
         if (PWM_duty_cycle >= pwm_max_duty_value) {
             pwm_direction = -pwm_duty_step;
         }
-        if (PWM_duty_cycle <= pwm_min_duty_value) {
+        if (PWM_duty_cycle <= ((lowVoltageIs) ? pwm_min_duty_value_lowPower : pwm_min_duty_value)) {
             pwm_direction = pwm_duty_step;
         }
         if (PWM_duty_cycle == pwm_max_duty_value) {
             delayone_pwm2++;
         }
-
+        //delay for flash in min brighntss of LED
         if (delayone_pwm2 > 0) {
-            if (delayone_pwm2 >= ((lowVoltageIs)?delayone_pwm2_max*3L:delayone_pwm2_max)) {
+            if (delayone_pwm2 >= ((lowVoltageIs) ? delayone_pwm2_max * 3L : delayone_pwm2_max)) {
                 delayone_pwm2 = 0;
                 PWM_duty_cycle = PWM_duty_cycle + pwm_direction;
             }
@@ -240,8 +240,15 @@ void sysLED_process(void) {
         LED_SYS1 = ~LED_SYS1;
         LEDS_FLUSH_PORT;
 
+
+
 #ifdef useVoltageDetector
-        if (LED_SYS1) VoltageDetector_Start();
+        if (LED_SYS1) {
+            VoltageDetector_Start();
+//#ifdef useDebugRS232    
+//            UART_Write_Text("ONE SECOND. one second. ONE SECOND. one second. ONE SECOND. one second. ONE SECOND.\n");
+//#endif   
+        }
 #endif
     }
 }

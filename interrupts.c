@@ -64,42 +64,48 @@ void interrupt isr(void) {
     if (INTCONbits.T0IF == 1) // timer 0 interrupt flag
     {
         INTCONbits.T0IF = 0; // clear the flag
-        INTCONbits.T0IE = 1; // reenable the interrupt
+        //INTCONbits.T0IE = 1; // reenable the interrupt
         TMR0 = TMR0InitValue; // reset the timer preset count
         t0_millis++;
     }
 #ifdef usePC2Keyboard    
     else if (INTCONbits.INTF == 1) {
-        INTCONbits.INTF = 0; // clear the flag
+        INTCONbits.INTF = 0;
+        pc2kbd_data = PC2Keyboard_DATA;
         pc2kbd_count++;
-        if (pc2kbd_count == 0) {
-            pc2kbd_start = (PC2Keyboard_DATA == 0);
-        } else if (pc2kbd_count > 1 && pc2kbd_count < 10) {
-            if (PC2Keyboard_DATA == 1) {
-                pc2kbd_answer = pc2kbd_answer | 0x80; // if input bit is high   
-            }
-            if (pc2kbd_count < 9) {
-                pc2kbd_answer = (pc2kbd_answer >> 1); // need to shift 7times,not to loose last bit
-            }
-        } else if (pc2kbd_count == 10) { // odd parity check
-            uint8_t p = pc2kbd_answer;
-            p = p ^ (p >> 4 | p << 4);
-            p = p ^ (p >> 2);
-            p = p ^ (p >> 1);
-            pc2kbd_parity = (p == PC2Keyboard_DATA);
-        } else if (pc2kbd_count == 11) {
-            if (pc2kbd_parity) {
-                pc2kbd_parity = 0;
-                pc2kbd_start = 0;
-                pc2kbd_ready = PC2Keyboard_DATA; //stop bit always must be 1s
+        if (pc2kbd_count == 1) {
+            if ((t0_millis - pc2kbd_timer) > 4) {
+                pc2kbd_start = (pc2kbd_data == 0);
+                pc2kbd_timer = t0_millis;
+                if (!pc2kbd_start) {
+                    pc2kbd_count = 0;
+                } else {
+                    pc2kbd_answer = 0;
+                    pc2kbd_parity = 1;
+                }
+            } else {
                 pc2kbd_count = 0;
             }
-        } else {
-            pc2kbd_ready = 0;
+        } else if (pc2kbd_count > 1 && pc2kbd_count < 10) {
+            if (pc2kbd_data == 1) {
+                pc2kbd_answer = pc2kbd_answer | 0b10000000; // if input bit is high   
+                pc2kbd_parity ^= 1;
+            }
+            if (pc2kbd_count < 9) {
+                pc2kbd_answer = pc2kbd_answer >> 1; // need to shift 7times,not to loose last bit
+            }
+        } else if (pc2kbd_count == 10) { // odd parity check
+            pc2kbd_parity = (pc2kbd_parity == pc2kbd_data);
+        } else if (pc2kbd_count == 11) {
+            if (pc2kbd_start & pc2kbd_parity) {
+                pc2kbd_ready = pc2kbd_data; //pc2kbd_data; //stop bit always must be 1s
+                if (!pc2kbd_ready) pc2kbd_answer = 0;
+            }
+            pc2kbd_count = 0;
             pc2kbd_parity = 0;
             pc2kbd_start = 0;
-            pc2kbd_count = 0;
         }
+        //INTCONbits.INTF = 0; // clear the flag
         //        OPTION_REGbits.INTEDG = 0; //falling egde
         //        INTCONbits.INTE == 1; // reenable the interrupt
     }

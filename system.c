@@ -41,7 +41,7 @@ OSCCONbits.OSTS=1; //Oscillator Start-up Time-out Status bit. 1 = Device is runn
 //OSCCONbits.HTS=1; // HFINTOSC Status bit, 1 = HFINTOSC is stable
 //OSCCONbits.LTS=0; // LFINTOSC Stable bit, 1 = LFINTOSC is stable
 OSCCONbits.SCS=0; // System Clock Select bit. 0 = Clock source defined by FOSC<2:0> of the CONFIG register
-OSCTUNEbits.TUN=17;
+OSCTUNEbits.TUN=19; // calibrate internal clock, 1sec timer0 = 19-1004 ms, 20-996 ms
 //Wait stabilization
 while (OSCCONbits.HTS==0);
 
