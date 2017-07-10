@@ -40,9 +40,11 @@
 #define usePWM
 #define useDebugRS232
 #define useVoltageDetector
-//#define useIBUTTON
+#define useIBUTTON
 //#define useKeyboard
-#define usePC2Keyboard
+//#define usePC2Keyboard
+
+
 
 
 
@@ -340,15 +342,24 @@ int32_t delay_for_OpenDoor;
 #define Time_for_Alarm 5l*60l*1000l
 int32_t delay_for_Alarm;
 
-#define Time_for_DISARMED 2l*60l*1000l
+#define Time_for_DISARMED 2l*60l*1000L
 int32_t delay_for_DISARMED;
 
 Security_State_e Security_State = ARMED;
 
+bit AuthPasswordOK;
+#define Time_for_Auth 5L*1000L //5 sec
+int16_t delay_for_Auth;
 
 #ifdef useIBUTTON
-const unsigned char key1[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+//const unsigned char key1[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 unsigned char serial_number[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+//int32_t delay_for_iButton=0;
+//uint8_t try_for_iButton=0;
+//#define  MAX_TRY_FOR_iButton 3u
+
+
 #endif
 
 

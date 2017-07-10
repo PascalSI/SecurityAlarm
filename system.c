@@ -43,9 +43,10 @@ OSCCONbits.OSTS=1; //Oscillator Start-up Time-out Status bit. 1 = Device is runn
 OSCCONbits.SCS=0; // System Clock Select bit. 0 = Clock source defined by FOSC<2:0> of the CONFIG register
 OSCTUNEbits.TUN=19; // calibrate internal clock, 1sec timer0 = 19-1004 ms, 20-996 ms
 //Wait stabilization
-while (OSCCONbits.HTS==0);
+//while (OSCCONbits.HTS==0);
 
-    
+
+
         
     
 }

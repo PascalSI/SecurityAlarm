@@ -23,15 +23,35 @@
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
-
+#ifdef useIBUTTON 
+//__EEPROM_DATA(0x01, 0xB1, 0x8A, 0xF3, 0x0E, 0x00, 0x00, 0x76); //# 09,10
+//__EEPROM_DATA(0x01, 0xC1, 0x15, 0xF4, 0x0E, 0x00, 0x00, 0xB0); //# 03,04
+#define MAX_IButton_PASSWORDS 2    
+#endif
 /* i.e. uint8_t <variable_name>; */
 
 /******************************************************************************/
 /* Main Program                                                               */
 
 /******************************************************************************/
+#ifdef useIBUTTON 
 
+//
 
+typedef struct EEiButtonSN_ {
+    unsigned char iButtonSN[8];
+} EEiButtonSN;
+
+eeprom EEiButtonSN EiButtons[] = {
+    {0x01, 0xB1, 0x8A, 0xF3, 0x0E, 0x00, 0x00, 0x76},
+    {0x01, 0xB1, 0x8A, 0xF3, 0x0E, 0x00, 0x00, 0x76},
+    {0x01, 0xC1, 0x15, 0xF4, 0x0E, 0x00, 0x00, 0xB0}
+};
+
+unsigned char EiButton_PASSWORDS = sizeof (EiButtons) / sizeof (EEiButtonSN);
+//eeprom E1 EiButtons0 = {0x01, 0xB1, 0x8A, 0xF3, 0x0E, 0x00, 0x00, 0x76};
+//eeprom E1 EiButtons1 = {0x01, 0xC1, 0x15, 0xF4, 0x0E, 0x00, 0x00, 0xB0};
+#endif
 
 void main(void) {
     /* Configure the oscillator for the device */
@@ -84,6 +104,8 @@ void main(void) {
 #ifdef useDebugRS232    
     UART_Write_Text("Init. ARMED\n");
 #endif    
+
+
 
 
 
@@ -314,38 +336,67 @@ void main(void) {
         //            __delay_us(100);
 
 
-        if (Detect_Slave_Device() != OW_HIGH) {
-            //DOOR_BUTTON = 0;
-            //drive_OW_low();
-            //OW_WRITE_PIN=0;
-            //OW_FLUSH_PIN;
-        } else {
+
+        if (AuthPasswordOK==0 && (Detect_Slave_Device() == OW_HIGH)) {
 #ifdef useDebugRS232            
-            UART_Write_Text("Detect_Slave\n");
+            //UART_Write_Text("Detect_Slave\n");
 #endif 
             //DOOR_BUTTON = 1;
             //drive_OW_high();
+
 
             OW_write_byte(0x33); // Send a command to read a serial number
 
             for (uint8_t temp = 0; temp < 8; temp++) {
                 serial_number[temp] = OW_read_byte(); // Read 64-bit registration (48-bit serial number) number from 1-wire Slave Device
             }
-#ifdef useDebugRS232    
-            for (uint8_t temp = 0; temp < 8; temp++) {
-                UART_Write(serial_number[temp]);
+
+            //check crc for recieved data
+            if (calc_crc(serial_number) == serial_number[7]) {
+                //#ifdef useDebugRS232    
+                //            for (uint8_t temp = 0; temp < 8; temp++) {
+                //                UART_Write(serial_number[temp]);
+                //            }
+                //#endif
+
+                uint8_t pwdok;
+                uint8_t pwd_addres;
+
+                for (uint8_t pwd_i = 0; pwd_i < MAX_IButton_PASSWORDS; pwd_i++) {
+                    pwdok = 1;
+                    for (uint8_t ibutt_i = 0; ibutt_i < 8; ibutt_i++) {
+                        pwd_addres = ibutt_i + (pwd_i * 8);
+                        pwdok &= (eeprom_read(pwd_addres) == (serial_number[ibutt_i]));
+                        if (!pwdok) break;
+                    }
+                    if (pwdok) break;
+                }
+                if (pwdok) {
+                    AuthPasswordOK = 1;
+                    delay_for_Auth=millis();
+                    buzzer_duration = 10;
+                }
             }
-#endif
         }
+
 #endif
 
 #ifdef usePC2Keyboard
         PC2Keboard_Process();
 #endif  
 
+        if (AuthPasswordOK){
+
+        }
+        
+        if ((millis() - delay_for_Auth ) > Time_for_Auth){
+            AuthPasswordOK=0;
+        }
+
 
         /* TODO <INSERT USER APPLICATION CODE HERE> */
-    }
 
+
+    }
 }
 
