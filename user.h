@@ -44,11 +44,6 @@
 //#define useKeyboard
 //#define usePC2Keyboard
 
-
-
-
-
-
 volatile union {
     unsigned char byte;
     PORTAbits_t bits;
@@ -178,7 +173,7 @@ bit ToneEnabled = false;
 bit TonePlayOnce = false;
 
 //SOS melody
-const uint8_t  Melody00[] = {
+const uint8_t Melody00[] = {
     30, 15,
     90, 30,
     30, 15,
@@ -317,6 +312,7 @@ uint8_t pwm_direction = pwm_duty_step;
 #define sysLEDblinkDelayOff_lowPower (1000*5)-sysLEDblinkDelayOn //5 sec
 
 //Security_State
+
 typedef enum _Security_State_e {
     DELAY_PREPARE_DOOR = 0,
     ARMED,
@@ -352,9 +348,47 @@ bit AuthPasswordOK;
 int16_t delay_for_Auth;
 
 #ifdef useIBUTTON
-//const unsigned char key1[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+//
+
+//eeprom unsigned char EiButton_PASSWORDS=2;
+
+#define MAX_iButton_PASSWORDS 30
+
+typedef struct EEiButtonSN_ {
+    unsigned char iButtonSN[8];
+} EEiButtonSN;
+
+//eeprom EEiButtonSN EiButtons[MAX_iButton_PASSWORDS] = {
+////     Precomiled to EPPROM iButton Passwords    
+////    {0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x00, 0x88},
+////    {0x03, 0xC4, 0x05, 0x06, 0x07, 0x08, 0x00, 0x99} 
+//#include "ibutton_passwords.inc"
+//};
+
+typedef struct EEiButtons_ {
+    unsigned char total_stored;
+    EEiButtonSN EiButtons[MAX_iButton_PASSWORDS];
+    //    = {
+    //        //     Precomiled to EPPROM iButton Passwords    
+    //        //    {0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x00, 0x88},
+    //        //    {0x03, 0xC4, 0x05, 0x06, 0x07, 0x08, 0x00, 0x99} 
+    //#include "ibutton_passwords.inc"
+    //    }
+} EEiButtons;
+
+eeprom EEiButtons mEEiButtons = {
+    2,{
+#include "ibutton_passwords.inc"        
+    }
+};
+#define EiButton_MASTER_KEY_ID 1
+
+//eeprom unsigned char EiButton_PASSWORDS = sizeof (EiButtons) / sizeof (EEiButtonSN);
+
 unsigned char serial_number[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
+bit needAddSerialNumberToEPPROM;
 //int32_t delay_for_iButton=0;
 //uint8_t try_for_iButton=0;
 //#define  MAX_TRY_FOR_iButton 3u
@@ -373,7 +407,7 @@ int16_t millis(void);
 int32_t millis_32(void);
 
 
-void InitApp(void);         /* I/O and Peripheral Initialization */
+void InitApp(void); /* I/O and Peripheral Initialization */
 
 //Melody 
 void buzzer_process(void);
@@ -394,7 +428,14 @@ void pwm_process(void);
 void sysLED_process(void);
 
 //ibutton 
+#ifdef useIBUTTON
+
+
+
 unsigned char Detect_Slave_Device(void);
+unsigned char CheckSerialNumberinEPPROM(unsigned char *sn);
+unsigned char AddSerialNumberToEPPROM(unsigned char *sn);
+#endif
 
 
 

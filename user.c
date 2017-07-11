@@ -245,30 +245,12 @@ void sysLED_process(void) {
 #ifdef useVoltageDetector
         if (LED_SYS1) {
             VoltageDetector_Start();
-//#ifdef useDebugRS232    
-//            UART_Write_Text("ONE SECOND. one second. ONE SECOND. one second. ONE SECOND. one second. ONE SECOND.\n");
-//#endif   
+            //#ifdef useDebugRS232    
+            //            UART_Write_Text("ONE SECOND. one second. ONE SECOND. one second. ONE SECOND. one second. ONE SECOND.\n");
+            //#endif   
         }
 #endif
     }
-}
-
-//----------------------------------------------------------------------------//
-// Function:        unsigned char Detect_Slave_Device(void)
-// PreCondition:    None
-// Input:           None
-// Output:          1 - Not Present   0 - Present
-// Overview:        To check the presence of slave device.
-//----------------------------------------------------------------------------//
-
-unsigned char Detect_Slave_Device(void) {
-    if (!OW_reset_pulse()) {
-        return OW_HIGH;
-    } else {
-
-        return OW_LOW;
-    }
-
 }
 
 void InitApp(void) {
@@ -487,4 +469,59 @@ void VoltageDetector_Start(void) {
 }
 
 
+#ifdef useIBUTTON
+//----------------------------------------------------------------------------//
+// Function:        unsigned char Detect_Slave_Device(void)
+// PreCondition:    None
+// Input:           None
+// Output:          1 - Not Present   0 - Present
+// Overview:        To check the presence of slave device.
+//----------------------------------------------------------------------------//
+
+unsigned char Detect_Slave_Device(void) {
+    if (!OW_reset_pulse()) {
+        return OW_HIGH;
+    } else {
+
+        return OW_LOW;
+    }
+
+}
+
+unsigned char CheckSerialNumberinEPPROM(unsigned char *sn) {
+    uint8_t pwdok;
+    uint8_t pwd_i, ibutt_i;
+    //uint8_t pwd_addres;
+
+    for (pwd_i = 0; pwd_i < mEEiButtons.total_stored; pwd_i++) { //EiButton_PASSWORDS
+        pwdok = 1;
+        for (ibutt_i = 0; ibutt_i < 8; ibutt_i++) {
+            //pwd_addres = ibutt_i + (pwd_i * 8);
+            //pwdok &= (eeprom_read(pwd_addres) == (serial_number[ibutt_i]));
+
+            pwdok &= (mEEiButtons.EiButtons[pwd_i].iButtonSN[ibutt_i] == (sn[ibutt_i]));
+
+            if (!pwdok) break;
+        }
+        if (pwdok) break;
+    }
+    return pwdok ? (ibutt_i + 1) : 0;
+}
+
+unsigned char AddSerialNumberToEPPROM(unsigned char *sn) {
+    //uint8_t pwdok = 1;
+    uint8_t i = mEEiButtons.total_stored + 1;
+    uint8_t j;
+    if (i < (MAX_iButton_PASSWORDS)) {
+        //eeprom_write
+        for (j = 0; j < 8; j++) {
+            mEEiButtons.EiButtons[i].iButtonSN[j] = sn[j];
+        }
+        mEEiButtons.total_stored = i;
+    } else {
+        return 0;
+    }
+    return 1;
+}
+#endif
 
