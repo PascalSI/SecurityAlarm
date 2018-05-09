@@ -40,7 +40,7 @@
 #define usePWM
 #define useDebugRS232
 #define useVoltageDetector
-#define useIBUTTON
+//#define useIBUTTON
 #define useKeyboard
 //#define usePC2Keyboard
 
@@ -202,10 +202,11 @@ const uint8_t Melody01[] = {
 };
 //Melody seconds Bit
 const uint8_t Melody02[] = {
-    5, 250
+    5, 125
 };
 //Melody ALARM OFF
 const uint8_t Melody03[] = {
+    1, 150,
     150, 50,
     5, 20,
     5, 5
@@ -249,7 +250,17 @@ const uint8_t passwordCode[] = {
     20, 20, 20
 };
 
+#ifdef useKeyboard
+#define maxPinCodes 2
+const uint8_t pinCodes[maxPinCodes][4] = {
+    {'1','2','3','4'},   
+    {'4','3','2','1'}
+};
+
 uint8_t passwordCodeCurrnetPointer = 0;
+uint8_t pinCodeCurrnetPointer = 0;
+uint8_t pinCodeCurrent[4];
+#endif
 
 typedef enum _Sensors_e {
     LOCK1_e = 0,
@@ -331,19 +342,19 @@ typedef enum _Security_State_e {
 } Security_State_e;
 
 
-#define Time_for_Unlocking 1l*60l*1000l
+#define Time_for_Unlocking 1l*60l*1000L
 int32_t delay_for_Unlocking;
 
-#define Time_for_CloseDoor 45l*1000l
+#define Time_for_CloseDoor 45L*1000L
 int32_t delay_for_CloseDoor;
 
-#define Time_for_OpenDoor 1l*60l*1000l
+#define Time_for_OpenDoor 1L*45L*1000L
 int32_t delay_for_OpenDoor;
 
-#define Time_for_Alarm 5l*60l*1000l
+#define Time_for_Alarm 5L*60L*1000L
 int32_t delay_for_Alarm;
 
-#define Time_for_DISARMED 2l*60l*1000L
+#define Time_for_DISARMED 2L*60L*1000L
 int32_t delay_for_DISARMED;
 
 Security_State_e Security_State = ARMED;
@@ -461,6 +472,10 @@ char UART_Read();
 void UART_Read_Text(char *Output, uint8_t length);
 
 void VoltageDetector_Start(void);
+
+#ifdef useKeyboard
+uint8_t checkPinCode(uint8_t key);
+#endif
 
 
 

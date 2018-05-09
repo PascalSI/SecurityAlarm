@@ -114,7 +114,7 @@ void main(void) {
         switch (getDoorButtonState()) {
             case KEYPAD_RELEASED:
                 //passwordCode[passwordCodeCurrnetPointer]
-
+#ifdef useIBUTTON  
                 if (isMasterIButton) {
                     if (DOOR_BUTTON_Duration >= 5 && DOOR_BUTTON_Duration < 20) {
                         needClearSerialNumberToEPPROM = 1;
@@ -122,6 +122,7 @@ void main(void) {
                     }
 
                 }
+#endif                
 
                 if (Security_State == DOOR_OPENED_DELAY) {
                     Melody_Stop();
@@ -170,7 +171,7 @@ void main(void) {
                     pwm_flash_mode(pwm_FlashMode_short);
                     passwordCodeCurrnetPointer = 0;
                 }
-                break;
+                break;//case KEYPAD_RELEASED:
             case KEYPAD_PRESSED:
                 if (Security_State == ARMED) {
                     if ((passwordCodeCurrnetPointer > 0)) {
@@ -193,8 +194,8 @@ void main(void) {
                     buzzer_duration = 5;
                 }
                 //SelectMelody(1);
-                break;
-        }
+                break;//case KEYPAD_PRESSED
+        }//switch 
 
 
         if (DOOR_State == DOOR_OFF && Security_State != DOOR_OPENED_DELAY) {
@@ -256,18 +257,42 @@ void main(void) {
 
 #ifdef useKeyboard        
         uint8_t key = getKey();
-        //    ROW_1_PIN = KEYPAD_ROW1_ON;
-        //    ROW_2_PIN = KEYPAD_ROW2_ON;
-        //    ROW_3_PIN = KEYPAD_ROW3_ON;
-        //    KEYPAD_ROWS_FLUSH_PORT;
-        //    NOP();
-        //uint8_t key=PORTA;
         if (key != NO_KEY) {
             buzzer_duration = 10;
+
+            uint8_t pinOk = checkPinCode(key);
+            if (pinOk) {
+                Security_State = DISARMED;
+                delay_for_DISARMED = millis_32();
+                Melody_Select(ALARMOFF_e);
+                pwm_flash_mode(pwm_FlashMode_short);
+            }
+
 #ifdef useDebugRS232      
-            UART_Write_Text("\nKEYPAD PERSED:");
+            UART_Write_Text("\nKEYPAD PRESED:");
             UART_Write(key);
-#endif                       
+            if (pinOk) {
+                UART_Write_Text(" PWD OK, ALARMOFF ");
+            };
+#endif                      
+            if (key == '*') {
+                pinCodeCurrnetPointer = 0;
+                //                Security_State = ALARM;
+                //                delay_for_Alarm = millis_32();
+                //                pwm_flash_mode(pwm_FlashMode_middle);
+                //                Melody_Select(SOS_e);
+                if (Security_State != DOOR_OPENED_DELAY) {
+                    Security_State = DOOR_OPENED_DELAY;
+                    delay_for_OpenDoor = millis_32();
+                    Melody_Select(SECONDS_e);
+#ifdef useDebugRS232                   
+                    UART_Write_Text("DOOR_OPENED_DELAY\n");
+#endif                 
+                }
+
+
+            };
+
         }
 #endif
         //check timers
@@ -405,6 +430,7 @@ void main(void) {
 
         }
 
+#ifdef useIBUTTON  
         //reset AuthPassword state after some time
         if (AuthPasswordOK && ((millis() - delay_for_Auth) > Time_for_Auth)) {
             AuthPasswordOK = 0;
@@ -415,6 +441,7 @@ void main(void) {
             UART_Write_Text("TIMEOUT Auth\n");
 #endif  
         }
+#endif        
 
 
         /* TODO <INSERT USER APPLICATION CODE HERE> */

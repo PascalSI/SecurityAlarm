@@ -40,7 +40,7 @@
 //#define COL_4_PIN       PORTBbits.RB7     /**< Col 4 Pin Number.*/
 //#define COL_4_DIR       TRISBbits.TRISB7  /**< Col 4 Direction.*/
 
-#define KEYPAD_DEBOUNCE_TIME    150u       /**< Debounce Time in msec.*/
+#define KEYPAD_DEBOUNCE_TIME    80u       /**< Debounce Time in msec.*/
 #define KEYPAD_HOLD_TIME        6000u     /**< Keypad Hold Time before Repeat.*/
 #define KEYPAD_REPEAT_TIME      500u      /**< Keypad Repeat Time.*/
 

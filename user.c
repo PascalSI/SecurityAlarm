@@ -527,13 +527,46 @@ unsigned char AddSerialNumberToEPPROM(unsigned char *sn) {
 
 void ClearSerialNumbersOfEPPROM(void) {
     uint8_t j, i;
-    for (i = mEEiButtons.total_stored-1; i >= EiButton_included_count_paswords; i--) {
+    for (i = mEEiButtons.total_stored - 1; i >= EiButton_included_count_paswords; i--) {
         for (j = 0; j < 8; j++) {
             CLRWDT();
             mEEiButtons.EiButtons[i].iButtonSN[j] = 0;
         }
     }
-    mEEiButtons.total_stored=EiButton_included_count_paswords;
+    mEEiButtons.total_stored = EiButton_included_count_paswords;
 }
 #endif
 
+//const uint8_t maxPinCodes=2;
+//const uint8_t pinCodes[maxPinCodes][4] = {
+//    {'1','2','3','4'},   
+//    {'4','3','2','1'}
+//};
+//
+//uint8_t passwordCodeCurrnetPointer = 0;
+//uint8_t pinCodeCurrnetPointer = 0;
+//uint8_t pinCodeCurrent[4];
+
+#ifdef useKeyboard
+uint8_t checkPinCode(uint8_t key) {
+    if (key == '#') {
+        pinCodeCurrnetPointer = 0;
+        buzzer_duration = 300;
+    } else {
+        pinCodeCurrent[pinCodeCurrnetPointer] = key;
+        pinCodeCurrnetPointer++;
+        if (pinCodeCurrnetPointer > 3) {
+            pinCodeCurrnetPointer = 0;
+            for (uint8_t i = 0; i < maxPinCodes; i++) {
+                for (uint8_t j = 0; j < 4; j++) {
+                    if (pinCodes[i][j] != pinCodeCurrent[j]) {
+                        break;
+                    }
+                    if (j == 3) return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+#endif
