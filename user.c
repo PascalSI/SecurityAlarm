@@ -150,7 +150,7 @@ void scan_sensors(void) {
 
 
     //------
-#ifndef useIBUTTON  
+#ifdef useIBUTTON  
     if (DOOR_BUTTON != DOOR_BUTTON_Last_State) {
         DOOR_BUTTON_LastDebounceTime = millis();
     }
@@ -505,23 +505,35 @@ unsigned char CheckSerialNumberinEPPROM(unsigned char *sn) {
         }
         if (pwdok) break;
     }
-    return pwdok ? (ibutt_i + 1) : 0;
+    return pwdok ? (pwd_i + 1) : 0;
 }
 
 unsigned char AddSerialNumberToEPPROM(unsigned char *sn) {
     //uint8_t pwdok = 1;
-    uint8_t i = mEEiButtons.total_stored + 1;
+    uint8_t i = mEEiButtons.total_stored;
     uint8_t j;
     if (i < (MAX_iButton_PASSWORDS)) {
         //eeprom_write
         for (j = 0; j < 8; j++) {
+            CLRWDT();
             mEEiButtons.EiButtons[i].iButtonSN[j] = sn[j];
         }
-        mEEiButtons.total_stored = i;
+        mEEiButtons.total_stored++;
     } else {
         return 0;
     }
     return 1;
+}
+
+void ClearSerialNumbersOfEPPROM(void) {
+    uint8_t j, i;
+    for (i = mEEiButtons.total_stored-1; i >= EiButton_included_count_paswords; i--) {
+        for (j = 0; j < 8; j++) {
+            CLRWDT();
+            mEEiButtons.EiButtons[i].iButtonSN[j] = 0;
+        }
+    }
+    mEEiButtons.total_stored=EiButton_included_count_paswords;
 }
 #endif
 

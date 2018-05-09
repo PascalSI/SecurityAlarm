@@ -47,7 +47,9 @@ void main(void) {
     PC2Keyboard_Init();
 #endif     
 
-    //Initialize_Keypad();
+#ifdef useKeyboard
+    Initialize_Keypad();
+#endif    
 
     //SerialWrite();
 
@@ -108,10 +110,19 @@ void main(void) {
         Melody_Processes();
         pwm_process();
         scan_sensors();
-
+        
         switch (getDoorButtonState()) {
             case KEYPAD_RELEASED:
                 //passwordCode[passwordCodeCurrnetPointer]
+
+                if (isMasterIButton) {
+                    if (DOOR_BUTTON_Duration >= 5 && DOOR_BUTTON_Duration < 20) {
+                        needClearSerialNumberToEPPROM = 1;
+                        break;
+                    }
+
+                }
+
                 if (Security_State == DOOR_OPENED_DELAY) {
                     Melody_Stop();
                 }
@@ -244,17 +255,17 @@ void main(void) {
 #endif        
 
 #ifdef useKeyboard        
-        uint8_t key; //= getKey();
+        uint8_t key = getKey();
         //    ROW_1_PIN = KEYPAD_ROW1_ON;
         //    ROW_2_PIN = KEYPAD_ROW2_ON;
         //    ROW_3_PIN = KEYPAD_ROW3_ON;
         //    KEYPAD_ROWS_FLUSH_PORT;
         //    NOP();
         //uint8_t key=PORTA;
-
-        if (key > 0 && key != '1') {
+        if (key != NO_KEY) {
             buzzer_duration = 10;
-#ifdef useDebugRS232                        
+#ifdef useDebugRS232      
+            UART_Write_Text("\nKEYPAD PERSED:");
             UART_Write(key);
 #endif                       
         }
@@ -313,7 +324,7 @@ void main(void) {
 
 #ifdef useIBUTTON        
 
-        if (AuthPasswordOK == 0 && (Detect_Slave_Device() == OW_HIGH)) {
+        if ((AuthPasswordOK == 0 || isMasterIButton) && (Detect_Slave_Device() == OW_HIGH)) {
 #ifdef useDebugRS232            
             //UART_Write_Text("Detect_Slave\n");
 #endif 
@@ -324,36 +335,66 @@ void main(void) {
             }
 
             //check crc for recieved data
-            if (calc_crc(serial_number) == serial_number[7]) {
-                //#ifdef useDebugRS232    
-                //            for (uint8_t temp = 0; temp < 8; temp++) {
-                //                UART_Write(serial_number[temp]);
-                //            }
-                //#endif
+            uint8_t crc = calc_crc(serial_number);
 
-                uint8_t pwdok = CheckSerialNumberinEPPROM(serial_number);
+            if ((crc > 0) && (crc == serial_number[7])) {
+#ifdef useDebugRS232    
+                for (uint8_t temp = 0; temp < 8; temp++) {
+                    UART_Write(serial_number[temp]);
+                }
+#endif
 
+                uint8_t SerialNumberFound = CheckSerialNumberinEPPROM(serial_number);
 
-                if (pwdok) {
+#ifdef useDebugRS232  
+                UART_Write(SerialNumberFound);
+#endif
+                if (SerialNumberFound && (!AuthPasswordOK)) {
                     AuthPasswordOK = 1;
                     delay_for_Auth = millis();
-                    if (pwdok == EiButton_MASTER_KEY_ID) {
+                    //isMasterIButton = 0;
+                    if (SerialNumberFound == EiButton_MASTER_KEY_ID) {
                         //masterKey;
                         //next key will add
+                        isMasterIButton = 1;
                         needAddSerialNumberToEPPROM = 1;
-                        Melody_Select(ALARMOFF_e);
+                        //Melody_Select(ALARMOFF_e);
+#ifdef useDebugRS232            
+                        UART_Write_Text("MASTER\n");
+#endif  
+                        //buzzer_duration = 20;
                     } else {
-                        buzzer_duration = 10;
-                    }
-                } else if (needAddSerialNumberToEPPROM) {
-                    needAddSerialNumberToEPPROM = 0;
-                    if (AddSerialNumberToEPPROM(serial_number)) {
-                        Melody_Select(ALARMON_e);
+#ifdef useDebugRS232                           
+                        UART_Write_Text("AUTH\n");
+#endif                        
+                        //buzzer_duration = 10;
                     }
                 }
-            }
+                
+                if ((SerialNumberFound == 0) && needAddSerialNumberToEPPROM) {
+                    needAddSerialNumberToEPPROM = 0;
+#ifdef useDebugRS232            
+                    UART_Write_Text("ADD EPPROM\n");
+#endif  
+                    if (AddSerialNumberToEPPROM(serial_number)) {
+                        //Melody_Select(ALARMON_e);
+#ifdef useDebugRS232            
+                        UART_Write_Text("ADDED EPPROM\n");
+#endif  
+                    }
+                } 
+            }//crc
         }
 
+
+
+        if (needClearSerialNumberToEPPROM) {
+            needClearSerialNumberToEPPROM = 0;
+            ClearSerialNumbersOfEPPROM();
+#ifdef useDebugRS232            
+            UART_Write_Text("CLEAR EPPROM\n");
+#endif  
+        }
 #endif
 
 #ifdef usePC2Keyboard
@@ -365,8 +406,14 @@ void main(void) {
         }
 
         //reset AuthPassword state after some time
-        if ((millis() - delay_for_Auth) > Time_for_Auth) {
+        if (AuthPasswordOK && ((millis() - delay_for_Auth) > Time_for_Auth)) {
             AuthPasswordOK = 0;
+            needAddSerialNumberToEPPROM = 0;
+            needClearSerialNumberToEPPROM = 0;
+            isMasterIButton = 0;
+#ifdef useDebugRS232            
+            UART_Write_Text("TIMEOUT Auth\n");
+#endif  
         }
 
 

@@ -14,6 +14,9 @@ static uint8_t KeyPressTable[MAX_ROW][MAX_COL] = {
     '1', '2', '3',
     '4', '5', '6',
     '7', '8', '9',
+#ifdef ROW_4_PIN   
+    '*', '0', '#'
+#endif            
 }; /**< Key Look-Up Table.*/
 
 //  '1','2','3','A',
@@ -36,11 +39,15 @@ void Initialize_Keypad(void) {
     ROW_1_DIR = TRIS_OUTPUT;
     ROW_2_DIR = TRIS_OUTPUT;
     ROW_3_DIR = TRIS_OUTPUT;
-    //ROW_4_DIR = 0;
+#ifdef ROW_4_DIR    
+    ROW_4_DIR = TRIS_OUTPUT;
+#endif    
     ROW_1_PIN = KEYPAD_ROW1_OFF;
     ROW_2_PIN = KEYPAD_ROW2_OFF;
     ROW_3_PIN = KEYPAD_ROW3_OFF;
-    //ROW_4_PIN = 0;
+#ifdef ROW_4_PIN    
+    ROW_4_PIN = KEYPAD_ROW4_OFF;
+#endif    
 
     // Enable Pull-Up of Columns or place hardware pull-ups
 
@@ -77,16 +84,25 @@ uint8_t getKey(void) {
  */
 
 static bit SaveStatepROW_3_PIN;
+#ifdef ROW_4_PIN    
+static bit SaveStatepROW_4_PIN;
+#endif
 
 static uint8_t _Sense_Keypress(void) {
     uint8_t row = 0u, col = 0u;
     uint8_t keypress = NO_KEYs;
     SaveStatepROW_3_PIN = ROW_3_PIN;
+#ifdef ROW_4_PIN        
+    SaveStatepROW_4_PIN = ROW_4_PIN;
+#endif    
 
     // Reset Row Values
     ROW_1_PIN = KEYPAD_ROW1_ON;
     ROW_2_PIN = KEYPAD_ROW2_ON;
     ROW_3_PIN = KEYPAD_ROW3_ON;
+#ifdef ROW_4_PIN        
+    ROW_4_PIN = KEYPAD_ROW4_ON;
+#endif    
     //    ROW_4_PIN = 0;
 
     KEYPAD_ROWS_FLUSH_PORT;
@@ -111,29 +127,29 @@ static uint8_t _Sense_Keypress(void) {
                     ROW_1_PIN = KEYPAD_ROW1_ON;
                     ROW_2_PIN = KEYPAD_ROW2_OFF;
                     ROW_3_PIN = KEYPAD_ROW3_OFF;
-                    //        ROW_4_PIN = 1;
+                    ROW_4_PIN = KEYPAD_ROW4_OFF;
                     break;
                 case 2:
                     // Ground Row-2
                     ROW_1_PIN = KEYPAD_ROW1_OFF;
                     ROW_2_PIN = KEYPAD_ROW2_ON;
                     ROW_3_PIN = KEYPAD_ROW3_OFF;
-                    //        ROW_4_PIN = 1;
+                    ROW_4_PIN = KEYPAD_ROW4_OFF;                    
                     break;
                 case 3:
                     // Ground Row-3
                     ROW_1_PIN = KEYPAD_ROW1_OFF;
                     ROW_2_PIN = KEYPAD_ROW2_OFF;
                     ROW_3_PIN = KEYPAD_ROW3_ON;
-                    //        ROW_4_PIN = 1;
+                    ROW_4_PIN = KEYPAD_ROW4_OFF;                    
                     break;
-                    //      case 4:
-                    //        // Ground Row-4
-                    //        ROW_1_PIN = 1;
-                    //        ROW_2_PIN = 1;
-                    //        ROW_3_PIN = 1;
-                    //        ROW_4_PIN = 0;
-                    //        break;
+                case 4:
+                    // Ground Row-4
+                    ROW_1_PIN = KEYPAD_ROW1_OFF;
+                    ROW_2_PIN = KEYPAD_ROW2_OFF;
+                    ROW_3_PIN = KEYPAD_ROW3_OFF;
+                    ROW_4_PIN = KEYPAD_ROW4_ON;                                        
+                    break;
             }
             KEYPAD_ROWS_FLUSH_PORT;
             // Scan Column
@@ -149,6 +165,9 @@ static uint8_t _Sense_Keypress(void) {
 
         //restore state of shared pin
         ROW_3_PIN = SaveStatepROW_3_PIN;
+#ifdef ROW_4_PIN            
+        ROW_4_PIN = SaveStatepROW_4_PIN;        
+#endif        
         KEYPAD_ROWS_FLUSH_PORT;
 
         if (row && col) {

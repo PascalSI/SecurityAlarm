@@ -17,7 +17,7 @@
 //#include "user.h"
 //#include "config.h"
 
-#define MAX_ROW         3                 /**< Maximum Row.*/
+#define MAX_ROW         4                 /**< Maximum Row.*/
 #define MAX_COL         3                 /**< Maximum Column.*/
 
 #define ROW_1_PIN       KEYPAD_ROW1     /**< Row 1 Pin Number.*/
@@ -26,8 +26,10 @@
 #define ROW_2_DIR       KEYPAD_ROW2_TRIS  /**< Row 2 Direction.*/
 #define ROW_3_PIN       KEYPAD_ROW3     /**< Row 3 Pin Number.*/
 #define ROW_3_DIR       KEYPAD_ROW3_TRIS  /**< Row 3 Direction.*/
-//#define ROW_4_PIN       PORTBbits.RB3     /**< Row 4 Pin Number.*/
-//#define ROW_4_DIR       TRISBbits.TRISB3  /**< Row 5 Direction.*/
+#if MAX_ROW>3
+#define ROW_4_PIN       KEYPAD_ROW4     /**< Row 4 Pin Number.*/
+#define ROW_4_DIR       KEYPAD_ROW4_TRIS  /**< Row 4 Direction.*/
+#endif
 
 #define COL_1_PIN       KEYPAD_COL1     /**< Col 1 Pin Number.*/
 #define COL_1_DIR       KEYPAD_COL1_TRIS  /**< Col 1 Direction.*/
@@ -38,9 +40,9 @@
 //#define COL_4_PIN       PORTBbits.RB7     /**< Col 4 Pin Number.*/
 //#define COL_4_DIR       TRISBbits.TRISB7  /**< Col 4 Direction.*/
 
-#define KEYPAD_DEBOUNCE_TIME    20u       /**< Debounce Time in msec.*/
-#define KEYPAD_HOLD_TIME        2000u     /**< Keypad Hold Time before Repeat.*/
-#define KEYPAD_REPEAT_TIME      100u      /**< Keypad Repeat Time.*/
+#define KEYPAD_DEBOUNCE_TIME    150u       /**< Debounce Time in msec.*/
+#define KEYPAD_HOLD_TIME        6000u     /**< Keypad Hold Time before Repeat.*/
+#define KEYPAD_REPEAT_TIME      500u      /**< Keypad Repeat Time.*/
 
 #define NO_KEYs                 255u      /**< No Key Pressed.*/
 #define NO_KEY                  0u        /**< No Key Pressed.*/

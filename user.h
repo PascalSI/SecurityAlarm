@@ -41,7 +41,7 @@
 #define useDebugRS232
 #define useVoltageDetector
 #define useIBUTTON
-//#define useKeyboard
+#define useKeyboard
 //#define usePC2Keyboard
 
 volatile union {
@@ -107,6 +107,11 @@ volatile union {
 #define KEYPAD_ROW3_ON 0U
 #define KEYPAD_ROW3_OFF !KEYPAD_ROW3_ON
 #define KEYPAD_ROW3_TRIS TRISCbits.TRISC2
+//ROW4
+#define KEYPAD_ROW4 LATPORTC.bits.RC7
+#define KEYPAD_ROW4_ON 0U
+#define KEYPAD_ROW4_OFF !KEYPAD_ROW4_ON
+#define KEYPAD_ROW4_TRIS TRISCbits.TRISC7
 //KEYPAD COLS
 //COL1
 #define KEYPAD_COL1 PORTAbits.RA0
@@ -280,7 +285,7 @@ int16_t DOOR_BUTTON_LastStateTime;
 int16_t DOOR_BUTTON_Duration; //0.1s = 1 
 Keypad_State_e DOOR_BUTTON_FinalState = KEYPAD_UP;
 
-const uint8_t debounceDelay = 100;
+const uint8_t debounceDelay = 200U;
 
 int16_t delaySysLEDblink = 0;
 int16_t delayone_pwm = 0;
@@ -377,8 +382,10 @@ typedef struct EEiButtons_ {
     //    }
 } EEiButtons;
 
+#define EiButton_included_count_paswords 3
 eeprom EEiButtons mEEiButtons = {
-    2,{
+    EiButton_included_count_paswords,
+    {
 #include "ibutton_passwords.inc"        
     }
 };
@@ -389,6 +396,8 @@ eeprom EEiButtons mEEiButtons = {
 unsigned char serial_number[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 bit needAddSerialNumberToEPPROM;
+bit needClearSerialNumberToEPPROM;
+bit isMasterIButton;
 //int32_t delay_for_iButton=0;
 //uint8_t try_for_iButton=0;
 //#define  MAX_TRY_FOR_iButton 3u
@@ -435,6 +444,7 @@ void sysLED_process(void);
 unsigned char Detect_Slave_Device(void);
 unsigned char CheckSerialNumberinEPPROM(unsigned char *sn);
 unsigned char AddSerialNumberToEPPROM(unsigned char *sn);
+void ClearSerialNumbersOfEPPROM(void);
 #endif
 
 
