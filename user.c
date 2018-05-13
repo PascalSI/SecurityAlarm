@@ -144,13 +144,11 @@ void scan_sensors(void) {
 
     if ((millis() - LOCK2_LastDebounceTime) > debounceDelay) {
         if (LOCK2 != LOCK2_State) {
-            LOCK2_State = LOCK2;
+            LOCK2_State = LOCK1_OFF;
         }
     }
-
-
+        
     //------
-#ifdef useIBUTTON  
     if (DOOR_BUTTON != DOOR_BUTTON_Last_State) {
         DOOR_BUTTON_LastDebounceTime = millis();
     }
@@ -168,7 +166,6 @@ void scan_sensors(void) {
         }
     }
 
-#endif    
 
     //------
     if (DOOR != DOOR_Last_State) {

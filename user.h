@@ -287,6 +287,13 @@ bit DOOR_BUTTON_State;
 bit LOCK1_State;
 bit LOCK2_State;
 
+
+#ifdef useDebugRS232
+bit LOCK1_State_Displayed;
+bit LOCK2_State_Displayed;
+bit DOOR_State_Displayed;
+#endif
+
 int16_t DOOR_LastDebounceTime;
 int16_t DOOR_BUTTON_LastDebounceTime;
 int16_t LOCK1_LastDebounceTime;
@@ -333,13 +340,19 @@ typedef enum _Security_State_e {
     DELAY_PREPARE_DOOR = 0,
     ARMED,
     DISARMED,
-    UNLOCKED,
-    WAIT_OPENING_ALL_LOCKS,
+//    UNLOCKED,
+//    WAIT_OPENING_ALL_LOCKS,
     DOOR_OPENED_DELAY,
     ALARM,
     ALARM_TIMEOUT,
     ALARM_UNLOCKING_TIMEOUT
 } Security_State_e;
+
+typedef enum _lock_Security_State_e {
+    LOCKED,
+    UNLOCKED,
+    WAIT_OPENING_ALL_LOCKS,
+} Lock_Security_State_e;
 
 
 #define Time_for_Unlocking 1l*60l*1000L
@@ -355,9 +368,12 @@ int32_t delay_for_OpenDoor;
 int32_t delay_for_Alarm;
 
 #define Time_for_DISARMED 2L*60L*1000L
+#define Time_for_DISARMED_LONG 30L*60L*1000L
 int32_t delay_for_DISARMED;
+bit DISARMED_LONG=false;
 
 Security_State_e Security_State = ARMED;
+Lock_Security_State_e Lock_Security_State = UNLOCKED;
 
 bit AuthPasswordOK;
 #define Time_for_Auth 5L*1000L //5 sec
@@ -415,6 +431,7 @@ bit isMasterIButton;
 
 
 #endif
+
 
 
 

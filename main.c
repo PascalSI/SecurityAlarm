@@ -62,7 +62,8 @@ void main(void) {
     DOOR_BUTTON_State = DOOR_BUTTON_OFF;
     LOCK1_State = LOCK1_OFF;
     LOCK2_State = LOCK2_OFF;
-
+    
+    Lock_Security_State = UNLOCKED;
 
 
     delaySysLEDblink = millis();
@@ -110,9 +111,10 @@ void main(void) {
         Melody_Processes();
         pwm_process();
         scan_sensors();
-        
+
         switch (getDoorButtonState()) {
             case KEYPAD_RELEASED:
+                UART_Write_Text("Door Button RELEASED\n");
                 //passwordCode[passwordCodeCurrnetPointer]
 #ifdef useIBUTTON  
                 if (isMasterIButton) {
@@ -120,7 +122,6 @@ void main(void) {
                         needClearSerialNumberToEPPROM = 1;
                         break;
                     }
-
                 }
 #endif                
 
@@ -128,24 +129,24 @@ void main(void) {
                     Melody_Stop();
                 }
 
-                if (Security_State == DOOR_OPENED_DELAY \
-                        || Security_State == ALARM \
-                        || Security_State == ALARM_UNLOCKING_TIMEOUT) {
-                    if ((DOOR_BUTTON_Duration >= passwordCode[passwordCodeCurrnetPointer]) \
-                            && (DOOR_BUTTON_Duration <= (passwordCode[passwordCodeCurrnetPointer] + 10))) {
-                        //step of password  OK
-                        passwordCodeCurrnetPointer++;
-                        buzzer_duration = 20;
-                    } else {
-                        //wrong step of password
-                        passwordCodeCurrnetPointer = 0;
-                        //SelectMelody(ERROR_e);
-                        buzzer_duration = 500;
-                    }
-                }
+                //                if (Security_State == DOOR_OPENED_DELAY \
+//                        || Security_State == ALARM \
+//                        || Security_State == ALARM_UNLOCKING_TIMEOUT) {
+                //                    if ((DOOR_BUTTON_Duration >= passwordCode[passwordCodeCurrnetPointer]) \
+//                            && (DOOR_BUTTON_Duration <= (passwordCode[passwordCodeCurrnetPointer] + 10))) {
+                //                        //step of password  OK
+                //                        passwordCodeCurrnetPointer++;
+                //                        buzzer_duration = 20;
+                //                    } else {
+                //                        //wrong step of password
+                //                        passwordCodeCurrnetPointer = 0;
+                //                        //SelectMelody(ERROR_e);
+                //                        buzzer_duration = 500;
+                //                    }
+                //                }
 
-                if (Security_State == ARMED || Security_State == DISARMED) {
-                    if (DOOR_BUTTON_Duration >= 5 && DOOR_BUTTON_Duration < 20) {
+                if (DOOR_BUTTON_Duration >= 5 && DOOR_BUTTON_Duration < 20) {
+                    if (Security_State == DISARMED) {
                         //delayone_pwm2_max = delayone_pwm2_short;
                         Melody_Select(SECONDS_e);
                         delay_for_CloseDoor = millis_32();
@@ -153,48 +154,56 @@ void main(void) {
 #ifdef useDebugRS232            
                         UART_Write_Text("DELAY_PREPARE_DOOR\n");
 #endif 
-                    } else {
+                    } else if (Security_State == ARMED) {
+                        Security_State = DISARMED;
+                        delay_for_DISARMED = millis_32();
+                        Melody_Select(ALARMOFF_e);
+                        pwm_flash_mode(pwm_FlashMode_short);
+#ifdef useDebugRS232                   
+                        UART_Write_Text("DISARMED BY DOOR BUTTON\n");
+#endif                                 
                         //StopMelody();
                         //delayone_pwm2_max = delayone_pwm2_middle;
                     }
                 }
 
-                //Check password OK is ?
-                if (passwordCodeCurrnetPointer >= sizeof (passwordCode)) {
-                    //password ok
-#ifdef useDebugRS232            
-                    UART_Write_Text("DISARMED\n");
-#endif 
-                    Security_State = DISARMED;
-                    delay_for_DISARMED = millis_32();
-                    Melody_Select(ALARMOFF_e);
-                    pwm_flash_mode(pwm_FlashMode_short);
-                    passwordCodeCurrnetPointer = 0;
-                }
-                break;//case KEYPAD_RELEASED:
-            case KEYPAD_PRESSED:
-                if (Security_State == ARMED) {
-                    if ((passwordCodeCurrnetPointer > 0)) {
-                        if ((DOOR_BUTTON_Duration >= passwordCode[passwordCodeCurrnetPointer]) && \
-                        (DOOR_BUTTON_Duration <= passwordCode[passwordCodeCurrnetPointer] + 10)) {
-                            passwordCodeCurrnetPointer++;
-                            if (passwordCodeCurrnetPointer >= sizeof (passwordCode)) {
-                                passwordCodeCurrnetPointer = 0;
-                            }
-                            buzzer_duration = 5;
-                        } else {
-                            passwordCodeCurrnetPointer = 0;
-                            Melody_Select(ERROR_e);
-                        }
-                    } else {
-                        //default beep
-                        buzzer_duration = 5;
-                    }
-                } else {
-                    buzzer_duration = 5;
-                }
-                //SelectMelody(1);
-                break;//case KEYPAD_PRESSED
+                //                //Check password OK is ?
+                //                if (passwordCodeCurrnetPointer >= sizeof (passwordCode)) {
+                //                    //password ok
+                //#ifdef useDebugRS232            
+                //                    UART_Write_Text("DISARMED\n");
+                //#endif 
+                //                    Security_State = DISARMED;
+                //                    delay_for_DISARMED = millis_32();
+                //                    Melody_Select(ALARMOFF_e);
+                //                    pwm_flash_mode(pwm_FlashMode_short);
+                //                    passwordCodeCurrnetPointer = 0;
+                //                }
+                break; //case KEYPAD_RELEASED:
+//            case KEYPAD_PRESSED:
+//                //                if (Security_State == ARMED) {
+//                //                    if ((passwordCodeCurrnetPointer > 0)) {
+//                //                        if ((DOOR_BUTTON_Duration >= passwordCode[passwordCodeCurrnetPointer]) && \
+////                        (DOOR_BUTTON_Duration <= passwordCode[passwordCodeCurrnetPointer] + 10)) {
+//                //                            passwordCodeCurrnetPointer++;
+//                //                            if (passwordCodeCurrnetPointer >= sizeof (passwordCode)) {
+//                //                                passwordCodeCurrnetPointer = 0;
+//                //                            }
+//                //                            buzzer_duration = 5;
+//                //                        } else {
+//                //                            passwordCodeCurrnetPointer = 0;
+//                //                            Melody_Select(ERROR_e);
+//                //                        }
+//                //                    } else {
+//                //                        //default beep
+//                //                        buzzer_duration = 5;
+//                //                    }
+//                //                } else {
+//                //                    buzzer_duration = 5;
+//                //                }
+//                //                //SelectMelody(1);
+//                UART_Write_Text("Door Button PRESSED\n");
+//                break; //case KEYPAD_PRESSED
         }//switch 
 
 
@@ -202,43 +211,74 @@ void main(void) {
             if (LOCK1_State == LOCK1_ON) {
                 //buzzer_duration = 10;
 
-#ifdef useDebugRS232            
-                UART_Write_Text("LOCK1\n");
+#ifdef useDebugRS232       
+                if (!LOCK1_State_Displayed) {
+                    UART_Write_Text("LOCK1 opened\n");
+                    LOCK1_State_Displayed = true;
+                }
 #endif            
             }
+#ifdef useDebugRS232            
+            else {
+                if (LOCK1_State_Displayed) {
+                    UART_Write_Text("LOCK1 closed\n");
+                    LOCK1_State_Displayed = false;
+                }
+            }
+#endif                             
             if (LOCK2_State == LOCK2_ON) {
                 //buzzer_duration = 10;
 #ifdef useDebugRS232            
-                UART_Write_Text("LOCK2\n");
+                if (!LOCK2_State_Displayed) {
+                    UART_Write_Text("LOCK2 opened\n");
+                    LOCK2_State_Displayed = true;
+                }
 #endif            
             }
+#ifdef useDebugRS232            
+            else {
+                if (LOCK2_State_Displayed) {
+                    UART_Write_Text("LOCK2 closed\n");
+                    LOCK2_State_Displayed = false;
+                }
+            }
+#endif               
+
 
             if (LOCK1_State == LOCK1_ON && LOCK2_State == LOCK2_ON) {
-                if (Security_State != UNLOCKED) {
-                    Security_State = UNLOCKED;
+                if (Lock_Security_State != UNLOCKED) {
+                    Lock_Security_State = UNLOCKED;
 #ifdef useDebugRS232                   
                     UART_Write_Text("UNLOCKED\n");
 #endif                 
                 }
             } else if (LOCK1_State == LOCK1_ON || LOCK2_State == LOCK2_ON) {
-                if (Security_State != WAIT_OPENING_ALL_LOCKS) {
-                    Security_State = WAIT_OPENING_ALL_LOCKS;
+                if (Lock_Security_State != WAIT_OPENING_ALL_LOCKS) {
+                    Lock_Security_State = WAIT_OPENING_ALL_LOCKS;
                     delay_for_Unlocking = millis_32();
 #ifdef useDebugRS232                   
                     UART_Write_Text("WAIT_OPENING_ALL_LOCKS\n");
 #endif                 
                 }
+            }else if (LOCK1_State == LOCK1_OFF || LOCK2_State == LOCK2_OFF) {
+                Lock_Security_State = LOCKED;
             }
-        }
+        }//if DOOR_State == DOOR_OFF 
 
 
         if (DOOR_State == DOOR_ON) {
             //buzzer_duration = 10;
 #ifdef useDebugRS232            
-            UART_Write_Text("DOOR\n");
+            if (!DOOR_State_Displayed) {
+                UART_Write_Text("DOOR opened\n");
+                DOOR_State_Displayed = true;
+            }
 #endif       
 
-            if (Security_State != DOOR_OPENED_DELAY) {
+            if (Security_State != DOOR_OPENED_DELAY
+                    && Security_State != ALARM
+                    && Security_State != DISARMED
+                    ) {
                 Security_State = DOOR_OPENED_DELAY;
                 delay_for_OpenDoor = millis_32();
                 Melody_Select(SECONDS_e);
@@ -246,8 +286,15 @@ void main(void) {
                 UART_Write_Text("DOOR_OPENED_DELAY\n");
 #endif                 
             }
-
         }
+#ifdef useDebugRS232            
+        else {
+            if (DOOR_State_Displayed) {
+                UART_Write_Text("DOOR closed\n");
+                DOOR_State_Displayed = false;
+            }
+        }
+#endif            
 
 #ifdef useDebugRS232
         //        if (!UART_TX_Empty()){
@@ -281,36 +328,50 @@ void main(void) {
                 //                delay_for_Alarm = millis_32();
                 //                pwm_flash_mode(pwm_FlashMode_middle);
                 //                Melody_Select(SOS_e);
-                if (Security_State != DOOR_OPENED_DELAY) {
-                    Security_State = DOOR_OPENED_DELAY;
-                    delay_for_OpenDoor = millis_32();
-                    Melody_Select(SECONDS_e);
-#ifdef useDebugRS232                   
-                    UART_Write_Text("DOOR_OPENED_DELAY\n");
-#endif                 
-                }
-
-
+                //                if (Security_State != DOOR_OPENED_DELAY) {
+                //                    Security_State = DOOR_OPENED_DELAY;
+                //                    delay_for_OpenDoor = millis_32();
+                //                    Melody_Select(SECONDS_e);
+                //#ifdef useDebugRS232                   
+                //                    UART_Write_Text("DOOR_OPENED_DELAY\n");
+                //#endif                 
+                //                }
+                DISARMED_LONG = true;
+                delay_for_DISARMED = millis_32();
+#ifdef useDebugRS232            
+                UART_Write_Text("SETUP Time_for_DISARMED IS LONG NOW.\n");
+#endif    
+            } else if (key == '#') {
+                DISARMED_LONG = false;
+                delay_for_DISARMED = millis_32();
+#ifdef useDebugRS232            
+                UART_Write_Text("SETUP Time_for_DISARMED IS STANDARD NOW.\n");
+#endif  
             };
-
         }
 #endif
         //check timers
 
 
         if ((Security_State == DISARMED)) {
-            if ((millis_32() - delay_for_DISARMED) >= Time_for_DISARMED) {
+            if ((millis_32() - delay_for_DISARMED) >=
+                    (DISARMED_LONG ? Time_for_DISARMED_LONG : Time_for_DISARMED)) {
                 Security_State = ARMED;
                 pwm_flash_mode(pwm_FlashMode_long);
                 Melody_Select(ALARMON_e);
-#ifdef useDebugRS232            
+#ifdef useDebugRS232           
+                if (DISARMED_LONG) {
+                    UART_Write_Text("LONG ");
+                }
                 UART_Write_Text("Time_for_DISARMED. ARMED\n");
+#endif           
+                DISARMED_LONG = false;
             }
-#endif   
         }
 
         if ((Security_State == DELAY_PREPARE_DOOR) && ((millis_32() - delay_for_CloseDoor) >= Time_for_CloseDoor)) {
             Security_State = ARMED;
+            DISARMED_LONG = false;
 #ifdef useDebugRS232            
             UART_Write_Text("Time_for_CloseDoor. ARMED\n");
 #endif                
@@ -318,7 +379,7 @@ void main(void) {
             Melody_Select(ALARMON_e);
         }
 
-        if ((Security_State == WAIT_OPENING_ALL_LOCKS) && ((millis_32() - delay_for_Unlocking) >= Time_for_Unlocking)) {
+        if ((Lock_Security_State == WAIT_OPENING_ALL_LOCKS) && ((millis_32() - delay_for_Unlocking) >= Time_for_Unlocking)) {
             Security_State = ALARM_UNLOCKING_TIMEOUT;
             delay_for_Alarm = millis_32();
             pwm_flash_mode(pwm_FlashMode_middle);
@@ -340,6 +401,7 @@ void main(void) {
 
         if ((Security_State == ALARM || Security_State == ALARM_UNLOCKING_TIMEOUT) && ((millis_32() - delay_for_Alarm) >= Time_for_Alarm)) {
             Security_State = ARMED;
+            DISARMED_LONG = false;
             pwm_flash_mode(pwm_FlashMode_long);
             Melody_Stop();
 #ifdef useDebugRS232            
@@ -395,7 +457,7 @@ void main(void) {
                         //buzzer_duration = 10;
                     }
                 }
-                
+
                 if ((SerialNumberFound == 0) && needAddSerialNumberToEPPROM) {
                     needAddSerialNumberToEPPROM = 0;
 #ifdef useDebugRS232            
@@ -407,7 +469,7 @@ void main(void) {
                         UART_Write_Text("ADDED EPPROM\n");
 #endif  
                     }
-                } 
+                }
             }//crc
         }
 
