@@ -135,39 +135,39 @@ volatile union {
 
 #define DOOR_BUTTON PORTCbits.RC6
 #define DOOR_BUTTON_WRITE LATPORTC.bits.RC6
-#define DOOR_BUTTON_ON 0
-#define DOOR_BUTTON_OFF !DOOR_BUTTON_ON
+#define DOOR_BUTTON_PRESSED 0
+#define DOOR_BUTTON_RELEASED !DOOR_BUTTON_PRESSED
 #define DOOR_BUTTON_TRIS TRISCbits.TRISC6
 #define DOOR_BUTTON_FLUSH_PORT LATPORTC_FLUSH
 
 #define LOCK1 PORTAbits.RA4
 
 #ifdef useInverseInputSensors
-#define LOCK1_ON 1
+#define LOCK1_OPENED 0
 #else
-#define LOCK1_ON 0
+#define LOCK1_OPENED 1 
 #endif
 
-#define LOCK1_OFF !LOCK1_ON
+#define LOCK1_CLOSED !LOCK1_OPENED
 #define LOCK1_TRIS TRISAbits.TRISA4
 
 #define LOCK2 PORTAbits.RA5
 
 #ifdef useInverseInputSensors
-#define LOCK2_ON 1
+#define LOCK2_OPENED 0
 #else
-#define LOCK2_ON 0
+#define LOCK2_OPENED 1   
 #endif
-#define LOCK2_OFF !LOCK2_ON
+#define LOCK2_CLOSED !LOCK2_OPENED
 #define LOCK2_TRIS TRISAbits.TRISA5
 
 #define DOOR PORTCbits.RC3
 #ifdef useInverseInputSensors
-#define DOOR_ON 1
+#define DOOR_OPENED 0
 #else
-#define DOOR_ON 0
+#define DOOR_OPENED 1
 #endif
-#define DOOR_OFF !DOOR_ON
+#define DOOR_CLOSED !DOOR_OPENED
 #define DOOR_TRIS TRISCbits.TRISC3
 
 //------------
@@ -206,7 +206,7 @@ const uint8_t Melody02[] = {
 };
 //Melody ALARM OFF
 const uint8_t Melody03[] = {
-    1, 150,
+    1, 50,
     150, 50,
     5, 20,
     5, 5

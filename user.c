@@ -144,7 +144,7 @@ void scan_sensors(void) {
 
     if ((millis() - LOCK2_LastDebounceTime) > debounceDelay) {
         if (LOCK2 != LOCK2_State) {
-            LOCK2_State = LOCK1_OFF;
+            LOCK2_State = LOCK2;
         }
     }
         
@@ -156,7 +156,7 @@ void scan_sensors(void) {
     if ((millis() - DOOR_BUTTON_LastDebounceTime) > debounceDelay) {
         if (DOOR_BUTTON != DOOR_BUTTON_State) {
             DOOR_BUTTON_State = DOOR_BUTTON;
-            if (DOOR_BUTTON_State == DOOR_BUTTON_ON) {
+            if (DOOR_BUTTON_State == DOOR_BUTTON_PRESSED) {
                 DOOR_BUTTON_FinalState = KEYPAD_PRESSED;
             } else {
                 DOOR_BUTTON_FinalState = KEYPAD_RELEASED;

@@ -53,15 +53,15 @@ void main(void) {
 
     //SerialWrite();
 
-    DOOR_Last_State = DOOR_OFF;
-    DOOR_BUTTON_Last_State = DOOR_BUTTON_OFF;
-    LOCK1_Last_State = LOCK1_OFF;
-    LOCK2_Last_State = LOCK2_OFF;
+    DOOR_Last_State = DOOR_CLOSED;
+    DOOR_BUTTON_Last_State = DOOR_BUTTON_RELEASED;
+    LOCK1_Last_State = LOCK1_CLOSED;
+    LOCK2_Last_State = LOCK2_CLOSED;
 
-    DOOR_State = DOOR_OFF;
-    DOOR_BUTTON_State = DOOR_BUTTON_OFF;
-    LOCK1_State = LOCK1_OFF;
-    LOCK2_State = LOCK2_OFF;
+    DOOR_State = DOOR_CLOSED;
+    DOOR_BUTTON_State = DOOR_BUTTON_RELEASED;
+    LOCK1_State = LOCK1_CLOSED;
+    LOCK2_State = LOCK2_CLOSED;
     
     Lock_Security_State = UNLOCKED;
 
@@ -207,8 +207,8 @@ void main(void) {
         }//switch 
 
 
-        if (DOOR_State == DOOR_OFF && Security_State != DOOR_OPENED_DELAY) {
-            if (LOCK1_State == LOCK1_ON) {
+        if (DOOR_State == DOOR_CLOSED && Security_State != DOOR_OPENED_DELAY) {
+            if (LOCK1_State == LOCK1_OPENED) {
                 //buzzer_duration = 10;
 
 #ifdef useDebugRS232       
@@ -226,7 +226,7 @@ void main(void) {
                 }
             }
 #endif                             
-            if (LOCK2_State == LOCK2_ON) {
+            if (LOCK2_State == LOCK2_OPENED) {
                 //buzzer_duration = 10;
 #ifdef useDebugRS232            
                 if (!LOCK2_State_Displayed) {
@@ -245,14 +245,14 @@ void main(void) {
 #endif               
 
 
-            if (LOCK1_State == LOCK1_ON && LOCK2_State == LOCK2_ON) {
+            if (LOCK1_State == LOCK1_OPENED && LOCK2_State == LOCK2_OPENED) {
                 if (Lock_Security_State != UNLOCKED) {
                     Lock_Security_State = UNLOCKED;
 #ifdef useDebugRS232                   
                     UART_Write_Text("UNLOCKED\n");
 #endif                 
                 }
-            } else if (LOCK1_State == LOCK1_ON || LOCK2_State == LOCK2_ON) {
+            } else if (LOCK1_State == LOCK1_OPENED || LOCK2_State == LOCK2_OPENED) {
                 if (Lock_Security_State != WAIT_OPENING_ALL_LOCKS) {
                     Lock_Security_State = WAIT_OPENING_ALL_LOCKS;
                     delay_for_Unlocking = millis_32();
@@ -260,13 +260,13 @@ void main(void) {
                     UART_Write_Text("WAIT_OPENING_ALL_LOCKS\n");
 #endif                 
                 }
-            }else if (LOCK1_State == LOCK1_OFF || LOCK2_State == LOCK2_OFF) {
+            }else if (LOCK1_State == LOCK1_CLOSED || LOCK2_State == LOCK2_CLOSED) {
                 Lock_Security_State = LOCKED;
             }
         }//if DOOR_State == DOOR_OFF 
 
 
-        if (DOOR_State == DOOR_ON) {
+        if (DOOR_State == DOOR_OPENED) {
             //buzzer_duration = 10;
 #ifdef useDebugRS232            
             if (!DOOR_State_Displayed) {
@@ -305,6 +305,12 @@ void main(void) {
 #ifdef useKeyboard        
         uint8_t key = getKey();
         if (key != NO_KEY) {
+            
+            if (Security_State == DOOR_OPENED_DELAY){
+               Melody_Stop();                
+            }
+            
+            
             buzzer_duration = 10;
 
             uint8_t pinOk = checkPinCode(key);
