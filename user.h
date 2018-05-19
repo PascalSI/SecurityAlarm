@@ -161,6 +161,9 @@ volatile union {
 #define LOCK2_CLOSED !LOCK2_OPENED
 #define LOCK2_TRIS TRISAbits.TRISA5
 
+#define LOCKS_LOCKED 1 
+#define LOCKS_UNLOCKED !LOCKS_LOCKED 
+
 #define DOOR PORTCbits.RC3
 #ifdef useInverseInputSensors
 #define DOOR_OPENED 0
@@ -286,7 +289,7 @@ bit DOOR_State;
 bit DOOR_BUTTON_State;
 bit LOCK1_State;
 bit LOCK2_State;
-
+bit LOCKS_State;
 
 #ifdef useDebugRS232
 bit LOCK1_State_Displayed;
@@ -349,14 +352,19 @@ typedef enum _Security_State_e {
 } Security_State_e;
 
 typedef enum _lock_Security_State_e {
+    UNDEFINED,
     LOCKED,
     UNLOCKED,
     WAIT_OPENING_ALL_LOCKS,
+    WAIT_CLOSING_ALL_LOCKS
 } Lock_Security_State_e;
 
 
 #define Time_for_Unlocking 1l*60l*1000L
 int32_t delay_for_Unlocking;
+
+#define Time_for_Locking 1l*60l*1000L
+int32_t delay_for_Locking;
 
 #define Time_for_CloseDoor 45L*1000L
 int32_t delay_for_CloseDoor;

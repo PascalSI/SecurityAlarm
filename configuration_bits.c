@@ -50,7 +50,7 @@
 // Use project enums instead of #define for ON and OFF.
 
 //userIDs
-#pragma config IDLOC0 = 1, IDLOC1 = 4, IDLOC2 = 5, IDLOC3 = 6
+#pragma config IDLOC0 = 0x20, IDLOC1 = 0x18, IDLOC2 = 0x05, IDLOC3 = 0x20
 
 
 #include <xc.h>
